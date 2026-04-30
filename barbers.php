@@ -241,16 +241,19 @@ $barbersStmt->execute();
 $barbers = $barbersStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $barbersCount = count($barbers);
-$commissionTotal = 0.0;
+$commissionPercentTotal = 0.0;
 $registeredOffDaysCount = 0;
 
 foreach ($barbers as $barberSummary) {
-    $commissionTotal += (float) ($barberSummary['commission_percent'] ?? 0);
+    $commissionPercentTotal += (float) ($barberSummary['commission_percent'] ?? 0);
     $registeredOffDays = json_decode($barberSummary['off_days'] ?? '[]', true);
+    if (!is_array($registeredOffDays)) {
+        $registeredOffDays = [];
+    }
     $registeredOffDaysCount += count(normalizeBarberOffDays($registeredOffDays, $weekDays));
 }
 
-$averageCommission = $barbersCount > 0 ? $commissionTotal / $barbersCount : 0;
+$averageCommission = $barbersCount > 0 ? $commissionPercentTotal / $barbersCount : 0;
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -281,7 +284,7 @@ $averageCommission = $barbersCount > 0 ? $commissionTotal / $barbersCount : 0;
                 <div class="page-header">
                     <div>
                         <h1 class="section-title">💈 الحلاقين</h1>
-                        <p class="page-subtitle">إدارة بيانات الحلاقين، مواعيدهم، وأيام الإجازة من واجهة أوضح وأكثر احترافية.</p>
+                        <p class="barbers-page-subtitle">إدارة بيانات الحلاقين، مواعيدهم، وأيام الإجازة من واجهة أوضح وأكثر احترافية.</p>
                     </div>
                 </div>
 

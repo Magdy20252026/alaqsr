@@ -474,7 +474,7 @@ body.dark-mode .login-error-box {
 .sidebar::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, #38bdf8, #8b5cf6);
     border-radius: 999px;
-    border: 3px solid rgba(15, 23, 42, 0.65);
+    border: 2px solid rgba(15, 23, 42, 0.65);
 }
 
 body.dark-mode .sidebar::-webkit-scrollbar-track {
@@ -644,7 +644,7 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
     color: var(--text-color);
 }
 
-.page-subtitle {
+.barbers-page-subtitle {
     margin-top: 6px;
     font-size: 16px;
     font-weight: 700;
