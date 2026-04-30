@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll("form[data-confirm-message]").forEach(function (form) {
         form.addEventListener("submit", function (event) {
-            if (!window.confirm(form.getAttribute("data-confirm-message") || "")) {
+            if (!window.confirm(form.getAttribute("data-confirm-message") || "هل أنت متأكد؟")) {
                 event.preventDefault();
             }
         });

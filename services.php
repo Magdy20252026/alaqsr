@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $priceInput = trim($_POST['price'] ?? '0');
 
     if ($serviceName !== '') {
-        if (!is_numeric($priceInput) || (float) $priceInput < 0) {
+        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $priceInput)) {
             header("Location: services.php?error=invalid_price");
             exit;
         }
@@ -159,7 +159,7 @@ $services = $servicesStmt->fetchAll(PDO::FETCH_ASSOC);
                                         <td data-label="💵 السعر"><?php echo number_format((float) $service['price'], 2); ?></td>
                                         <td class="action-cell" data-label="⚙️ الإجراءات">
                                             <a href="services.php?edit=<?php echo $service['id']; ?>" class="btn btn-warning">✏️ تعديل</a>
-                                            <form method="post" data-confirm-message="حذف الخدمة؟">
+                                            <form method="post" data-confirm-message="حذف الخدمة &quot;<?php echo htmlspecialchars($service['service_name']); ?>&quot;؟">
                                                 <input type="hidden" name="delete_id" value="<?php echo $service['id']; ?>">
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                                                 <button type="submit" class="btn btn-danger">🗑️ حذف</button>
