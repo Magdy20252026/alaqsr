@@ -11,6 +11,8 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+const MYSQL_ERROR_DUPLICATE_COLUMN = 1060;
+
 function getBarberWeekDays()
 {
     return [
@@ -119,7 +121,7 @@ try {
         try {
             $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
         } catch (PDOException $migrationException) {
-            $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === 1060;
+            $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === MYSQL_ERROR_DUPLICATE_COLUMN;
             if (!$duplicateColumn) {
                 throw $migrationException;
             }
