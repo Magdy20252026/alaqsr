@@ -3,7 +3,12 @@ require_once "config.php";
 requireLogin();
 
 if (!canAccess('services')) {
+    http_response_code(403);
     die("غير مصرح");
+}
+
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
 $conn->exec(
@@ -18,21 +23,28 @@ $conn->exec(
 $settings = getSiteSettings($conn);
 $editService = null;
 
-if (isset($_GET['delete'])) {
-    $id = (int) $_GET['delete'];
-    $stmt = $conn->prepare("DELETE FROM services WHERE id = ?");
-    $stmt->execute([$id]);
-    header("Location: services.php");
-    exit;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $csrfToken = $_POST['csrf_token'] ?? '';
+
+    if (!hash_equals($_SESSION['csrf_token'], $csrfToken)) {
+        http_response_code(403);
+        die("الطلب غير صالح");
+    }
+
+    if (isset($_POST['delete_id'])) {
+        $stmt = $conn->prepare("DELETE FROM services WHERE id = ?");
+        $stmt->execute([(int) $_POST['delete_id']]);
+        header("Location: services.php");
+        exit;
+    }
+
     $id = trim($_POST['id'] ?? '');
     $serviceName = trim($_POST['service_name'] ?? '');
     $priceInput = trim($_POST['price'] ?? '0');
 
     if ($serviceName !== '') {
-        $priceValue = is_numeric($priceInput) ? number_format((float) $priceInput, 2, '.', '') : '0.00';
+        $priceNumber = is_numeric($priceInput) ? max(0, (float) $priceInput) : 0;
+        $priceValue = number_format($priceNumber, 2, '.', '');
 
         if ($id === '') {
             $stmt = $conn->prepare("INSERT INTO services (service_name, price) VALUES (?, ?)");
@@ -88,6 +100,7 @@ $services = $conn->query("SELECT * FROM services ORDER BY id DESC")->fetchAll(PD
 
                 <form method="post" class="inline-form services-form-grid">
                     <input type="hidden" name="id" value="<?php echo $editService['id'] ?? ''; ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
                     <div class="field-group horizontal-field">
                         <label>🧾 اسم الخدمة</label>
@@ -126,7 +139,11 @@ $services = $conn->query("SELECT * FROM services ORDER BY id DESC")->fetchAll(PD
                                         <td data-label="💵 السعر"><?php echo number_format((float) $service['price'], 2); ?></td>
                                         <td class="action-cell" data-label="⚙️ الإجراءات">
                                             <a href="services.php?edit=<?php echo $service['id']; ?>" class="btn btn-warning">✏️ تعديل</a>
-                                            <a href="services.php?delete=<?php echo $service['id']; ?>" class="btn btn-danger" onclick="return confirm('حذف الخدمة؟')">🗑️ حذف</a>
+                                            <form method="post" onsubmit="return confirm('حذف الخدمة؟')">
+                                                <input type="hidden" name="delete_id" value="<?php echo $service['id']; ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                                <button type="submit" class="btn btn-danger">🗑️ حذف</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 <?php } ?>

@@ -696,6 +696,10 @@ body.dark-mode .login-error-box {
     flex-wrap: wrap;
 }
 
+.action-cell form {
+    margin: 0;
+}
+
 .permission-form,
 .settings-form {
     display: flex;
