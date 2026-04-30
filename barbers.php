@@ -96,6 +96,7 @@ try {
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             barber_name VARCHAR(255) NOT NULL,
             barber_number VARCHAR(100) NOT NULL,
+            barber_barcode VARCHAR(100) NOT NULL DEFAULT '',
             attendance_time VARCHAR(10) NOT NULL,
             departure_time VARCHAR(10) NOT NULL,
             off_days TEXT NOT NULL,
@@ -103,6 +104,11 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+
+    $barcodeColumnStmt = $conn->query("SHOW COLUMNS FROM barbers LIKE 'barber_barcode'");
+    if (!$barcodeColumnStmt->fetch(PDO::FETCH_ASSOC)) {
+        $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
+    }
 } catch (PDOException $e) {
     http_response_code(500);
     die("تعذر تجهيز صفحة الحلاقين");
@@ -121,6 +127,7 @@ $formData = [
     'id' => '',
     'barber_name' => '',
     'barber_number' => '',
+    'barber_barcode' => '',
     'attendance_time' => '',
     'departure_time' => '',
     'off_days' => [],
@@ -141,6 +148,7 @@ if (isset($_GET['edit'])) {
             'id' => (string) $editBarber['id'],
             'barber_name' => $editBarber['barber_name'],
             'barber_number' => $editBarber['barber_number'],
+            'barber_barcode' => $editBarber['barber_barcode'] ?? '',
             'attendance_time' => $editBarber['attendance_time'],
             'departure_time' => $editBarber['departure_time'],
             'off_days' => normalizeBarberOffDays($decodedDays, $weekDays),
@@ -169,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'id' => trim($_POST['id'] ?? ''),
         'barber_name' => trim($_POST['barber_name'] ?? ''),
         'barber_number' => trim($_POST['barber_number'] ?? ''),
+        'barber_barcode' => trim($_POST['barber_barcode'] ?? ''),
         'attendance_time' => buildBarberTime($_POST['attendance_hour'] ?? '', $_POST['attendance_minute'] ?? '', $_POST['attendance_period'] ?? ''),
         'departure_time' => buildBarberTime($_POST['departure_hour'] ?? '', $_POST['departure_minute'] ?? '', $_POST['departure_period'] ?? ''),
         'off_days' => normalizeBarberOffDays($_POST['off_days'] ?? [], $weekDays),
@@ -176,9 +185,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     $editMode = $formData['id'] !== '';
 
-    if ($formData['barber_name'] === '' || $formData['barber_number'] === '') {
-        $errorMessage = '⚠️ الاسم ورقم الحلاق مطلوبان';
-    } elseif (getBarberTextLength($formData['barber_name']) > 255 || getBarberTextLength($formData['barber_number']) > 100) {
+    if ($formData['barber_name'] === '' || $formData['barber_number'] === '' || $formData['barber_barcode'] === '') {
+        $errorMessage = '⚠️ الاسم ورقم الحلاق وباركود الحلاق مطلوبة';
+    } elseif (
+        getBarberTextLength($formData['barber_name']) > 255
+        || getBarberTextLength($formData['barber_number']) > 100
+        || getBarberTextLength($formData['barber_barcode']) > 100
+    ) {
         $errorMessage = '⚠️ تحقق من طول البيانات المدخلة';
     } elseif ($formData['attendance_time'] === null || $formData['departure_time'] === null) {
         $errorMessage = '⚠️ اختر مواعيد صحيحة بنظام 12 ساعة';
@@ -195,12 +208,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($formData['id'] === '') {
                 $stmt = $conn->prepare(
-                    "INSERT INTO barbers (barber_name, barber_number, attendance_time, departure_time, off_days, commission_percent)
-                     VALUES (?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO barbers (barber_name, barber_number, barber_barcode, attendance_time, departure_time, off_days, commission_percent)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)"
                 );
                 $stmt->execute([
                     $formData['barber_name'],
                     $formData['barber_number'],
+                    $formData['barber_barcode'],
                     $formData['attendance_time'],
                     $formData['departure_time'],
                     $offDaysJson,
@@ -209,12 +223,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $stmt = $conn->prepare(
                     "UPDATE barbers
-                     SET barber_name = ?, barber_number = ?, attendance_time = ?, departure_time = ?, off_days = ?, commission_percent = ?
+                     SET barber_name = ?, barber_number = ?, barber_barcode = ?, attendance_time = ?, departure_time = ?, off_days = ?, commission_percent = ?
                      WHERE id = ?"
                 );
                 $stmt->execute([
                     $formData['barber_name'],
                     $formData['barber_number'],
+                    $formData['barber_barcode'],
                     $formData['attendance_time'],
                     $formData['departure_time'],
                     $offDaysJson,
@@ -233,7 +248,7 @@ $attendanceParts = splitBarberTime($formData['attendance_time']);
 $departureParts = splitBarberTime($formData['departure_time']);
 
 $barbersStmt = $conn->prepare(
-    "SELECT id, barber_name, barber_number, attendance_time, departure_time, off_days, commission_percent
+    "SELECT id, barber_name, barber_number, barber_barcode, attendance_time, departure_time, off_days, commission_percent
      FROM barbers
      ORDER BY id DESC"
 );
@@ -329,6 +344,11 @@ $averageCommission = $barbersCount > 0 ? $commissionPercentTotal / $barbersCount
                             </div>
 
                             <div class="field-group horizontal-field">
+                                <label>🏷️ باركود الحلاق</label>
+                                <input type="text" name="barber_barcode" required value="<?php echo htmlspecialchars($formData['barber_barcode']); ?>">
+                            </div>
+
+                            <div class="field-group horizontal-field">
                                 <label>🕘 ميعاد الحضور</label>
                                 <div class="time-selects">
                                     <select name="attendance_hour" required>
@@ -413,6 +433,7 @@ $averageCommission = $barbersCount > 0 ? $commissionPercentTotal / $barbersCount
                                 <th>#</th>
                                 <th>👤 اسم الحلاق</th>
                                 <th>🔢 رقم الحلاق</th>
+                                <th>🏷️ الباركود</th>
                                 <th>🕘 الحضور</th>
                                 <th>🌙 الانصراف</th>
                                 <th>🗓️ الإجازة</th>
@@ -431,6 +452,7 @@ $averageCommission = $barbersCount > 0 ? $commissionPercentTotal / $barbersCount
                                         <td data-label="#"><?php echo $barber['id']; ?></td>
                                         <td data-label="👤 اسم الحلاق"><?php echo htmlspecialchars($barber['barber_name']); ?></td>
                                         <td data-label="🔢 رقم الحلاق"><?php echo htmlspecialchars($barber['barber_number']); ?></td>
+                                        <td data-label="🏷️ الباركود"><?php echo htmlspecialchars($barber['barber_barcode'] ?? ''); ?></td>
                                         <td data-label="🕘 الحضور"><?php echo htmlspecialchars($barber['attendance_time']); ?></td>
                                         <td data-label="🌙 الانصراف"><?php echo htmlspecialchars($barber['departure_time']); ?></td>
                                         <td data-label="🗓️ الإجازة">
@@ -457,7 +479,7 @@ $averageCommission = $barbersCount > 0 ? $commissionPercentTotal / $barbersCount
                                 <?php } ?>
                             <?php } else { ?>
                                 <tr>
-                                    <td colspan="8">📭 لا يوجد حلاقون مسجلون</td>
+                                    <td colspan="9">📭 لا يوجد حلاقون مسجلون</td>
                                 </tr>
                             <?php } ?>
                         </tbody>
