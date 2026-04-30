@@ -105,12 +105,24 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    try {
-        $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
-    } catch (PDOException $migrationException) {
-        $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === 1060;
-        if (!$duplicateColumn) {
-            throw $migrationException;
+    $barcodeColumnStmt = $conn->prepare(
+        "SELECT 1
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'barbers'
+           AND COLUMN_NAME = 'barber_barcode'
+         LIMIT 1"
+    );
+    $barcodeColumnStmt->execute();
+
+    if (!$barcodeColumnStmt->fetchColumn()) {
+        try {
+            $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
+        } catch (PDOException $migrationException) {
+            $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === 1060;
+            if (!$duplicateColumn) {
+                throw $migrationException;
+            }
         }
     }
 } catch (PDOException $e) {
@@ -191,23 +203,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($formData['barber_name'] === '' || $formData['barber_number'] === '') {
         $errorMessage = '⚠️ الاسم ورقم الحلاق مطلوبان';
-    }
-
-    if ($errorMessage === '' && $formData['barber_barcode'] === '') {
-        $formData['barber_barcode'] = $formData['barber_number'];
-    }
-
-    if ($errorMessage === '' && (
+    } elseif (
         getBarberTextLength($formData['barber_name']) > 255
         || getBarberTextLength($formData['barber_number']) > 100
         || getBarberTextLength($formData['barber_barcode']) > 100
-    )) {
+    ) {
         $errorMessage = '⚠️ تحقق من طول البيانات المدخلة';
-    } elseif ($errorMessage === '' && ($formData['attendance_time'] === null || $formData['departure_time'] === null)) {
+    } elseif ($formData['attendance_time'] === null || $formData['departure_time'] === null) {
         $errorMessage = '⚠️ اختر مواعيد صحيحة بنظام 12 ساعة';
-    } elseif ($errorMessage === '' && !preg_match('/^\d+(?:\.\d{1,2})?$/', $formData['commission_percent'])) {
+    } elseif (!preg_match('/^\d+(?:\.\d{1,2})?$/', $formData['commission_percent'])) {
         $errorMessage = '⚠️ النسبة يجب أن تكون رقمًا صحيحًا أو عشريًا';
-    } elseif ($errorMessage === '') {
+    } else {
         $commissionValue = (float) $formData['commission_percent'];
 
         if ($commissionValue < 0 || $commissionValue > 100) {
@@ -215,6 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $formattedCommission = number_format($commissionValue, 2, '.', '');
             $offDaysJson = json_encode(array_values($formData['off_days']), JSON_UNESCAPED_UNICODE);
+            $barcodeValue = $formData['barber_barcode'] !== '' ? $formData['barber_barcode'] : $formData['barber_number'];
 
             if ($formData['id'] === '') {
                 $stmt = $conn->prepare(
@@ -224,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([
                     $formData['barber_name'],
                     $formData['barber_number'],
-                    $formData['barber_barcode'],
+                    $barcodeValue,
                     $formData['attendance_time'],
                     $formData['departure_time'],
                     $offDaysJson,
@@ -239,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([
                     $formData['barber_name'],
                     $formData['barber_number'],
-                    $formData['barber_barcode'],
+                    $barcodeValue,
                     $formData['attendance_time'],
                     $formData['departure_time'],
                     $offDaysJson,
