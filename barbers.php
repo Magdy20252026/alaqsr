@@ -239,6 +239,18 @@ $barbersStmt = $conn->prepare(
 );
 $barbersStmt->execute();
 $barbers = $barbersStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$barbersCount = count($barbers);
+$commissionTotal = 0.0;
+$registeredOffDaysCount = 0;
+
+foreach ($barbers as $barberSummary) {
+    $commissionTotal += (float) ($barberSummary['commission_percent'] ?? 0);
+    $registeredOffDays = json_decode($barberSummary['off_days'] ?? '[]', true);
+    $registeredOffDaysCount += count(normalizeBarberOffDays($registeredOffDays, $weekDays));
+}
+
+$averageCommission = $barbersCount > 0 ? $commissionTotal / $barbersCount : 0;
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -267,90 +279,129 @@ $barbers = $barbersStmt->fetchAll(PDO::FETCH_ASSOC);
 
             <div class="content-card">
                 <div class="page-header">
-                    <h1 class="section-title">💈 الحلاقين</h1>
+                    <div>
+                        <h1 class="section-title">💈 الحلاقين</h1>
+                        <p class="page-subtitle">إدارة بيانات الحلاقين، مواعيدهم، وأيام الإجازة من واجهة أوضح وأكثر احترافية.</p>
+                    </div>
+                </div>
+
+                <div class="barbers-overview">
+                    <div class="overview-card">
+                        <span class="overview-label">إجمالي الحلاقين</span>
+                        <strong class="overview-value"><?php echo $barbersCount; ?></strong>
+                    </div>
+                    <div class="overview-card">
+                        <span class="overview-label">متوسط النسبة</span>
+                        <strong class="overview-value"><?php echo number_format($averageCommission, 2); ?>%</strong>
+                    </div>
+                    <div class="overview-card">
+                        <span class="overview-label">أيام إجازة مسجلة</span>
+                        <strong class="overview-value"><?php echo $registeredOffDaysCount; ?></strong>
+                    </div>
                 </div>
 
                 <?php if ($errorMessage !== '') { ?>
                     <div class="login-error-box"><?php echo $errorMessage; ?></div>
                 <?php } ?>
 
-                <form method="post" class="inline-form barbers-form-grid">
-                    <input type="hidden" name="id" value="<?php echo htmlspecialchars($formData['id']); ?>">
-                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-
-                    <div class="field-group horizontal-field">
-                        <label>👤 اسم الحلاق</label>
-                        <input type="text" name="barber_name" required value="<?php echo htmlspecialchars($formData['barber_name']); ?>">
-                    </div>
-
-                    <div class="field-group horizontal-field">
-                        <label>🔢 رقم الحلاق</label>
-                        <input type="text" name="barber_number" required value="<?php echo htmlspecialchars($formData['barber_number']); ?>">
-                    </div>
-
-                    <div class="field-group horizontal-field">
-                        <label>🕘 ميعاد الحضور</label>
-                        <div class="time-selects">
-                            <select name="attendance_hour" required>
-                                <option value="">الساعة</option>
-                                <?php foreach ($hours as $hour) { ?>
-                                    <option value="<?php echo $hour; ?>" <?php if ($attendanceParts['hour'] === (string) $hour) echo 'selected'; ?>><?php echo $hour; ?></option>
-                                <?php } ?>
-                            </select>
-                            <select name="attendance_minute" required>
-                                <?php foreach ($minutes as $minute) { ?>
-                                    <option value="<?php echo $minute; ?>" <?php if ($attendanceParts['minute'] === $minute) echo 'selected'; ?>><?php echo $minute; ?></option>
-                                <?php } ?>
-                            </select>
-                            <select name="attendance_period" required>
-                                <option value="AM" <?php if ($attendanceParts['period'] === 'AM') echo 'selected'; ?>>صباحًا</option>
-                                <option value="PM" <?php if ($attendanceParts['period'] === 'PM') echo 'selected'; ?>>مساءً</option>
-                            </select>
+                <div class="barbers-management-layout">
+                    <section class="barber-form-card">
+                        <div class="barber-card-head">
+                            <h2><?php echo $editMode ? 'تعديل بيانات الحلاق' : 'إضافة حلاق جديد'; ?></h2>
+                            <p>أدخل البيانات الأساسية وحدد أكثر من يوم إجازة بسهولة من الاختيارات التالية.</p>
                         </div>
-                    </div>
 
-                    <div class="field-group horizontal-field">
-                        <label>🌙 ميعاد الانصراف</label>
-                        <div class="time-selects">
-                            <select name="departure_hour" required>
-                                <option value="">الساعة</option>
-                                <?php foreach ($hours as $hour) { ?>
-                                    <option value="<?php echo $hour; ?>" <?php if ($departureParts['hour'] === (string) $hour) echo 'selected'; ?>><?php echo $hour; ?></option>
-                                <?php } ?>
-                            </select>
-                            <select name="departure_minute" required>
-                                <?php foreach ($minutes as $minute) { ?>
-                                    <option value="<?php echo $minute; ?>" <?php if ($departureParts['minute'] === $minute) echo 'selected'; ?>><?php echo $minute; ?></option>
-                                <?php } ?>
-                            </select>
-                            <select name="departure_period" required>
-                                <option value="AM" <?php if ($departureParts['period'] === 'AM') echo 'selected'; ?>>صباحًا</option>
-                                <option value="PM" <?php if ($departureParts['period'] === 'PM') echo 'selected'; ?>>مساءً</option>
-                            </select>
-                        </div>
-                    </div>
+                        <form method="post" class="inline-form barbers-form-grid">
+                            <input type="hidden" name="id" value="<?php echo htmlspecialchars($formData['id']); ?>">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
-                    <div class="field-group horizontal-field barber-wide-field">
-                        <label>🗓️ أيام الإجازة</label>
-                        <select name="off_days[]" multiple size="7">
-                            <?php foreach ($weekDays as $dayKey => $dayLabel) { ?>
-                                <option value="<?php echo $dayKey; ?>" <?php if (in_array($dayKey, $formData['off_days'], true)) echo 'selected'; ?>><?php echo $dayLabel; ?></option>
-                            <?php } ?>
-                        </select>
-                    </div>
+                            <div class="field-group horizontal-field">
+                                <label>👤 اسم الحلاق</label>
+                                <input type="text" name="barber_name" required value="<?php echo htmlspecialchars($formData['barber_name']); ?>">
+                            </div>
 
-                    <div class="field-group horizontal-field">
-                        <label>💯 النسبة المئوية</label>
-                        <input type="number" name="commission_percent" min="0" max="100" step="0.01" required value="<?php echo htmlspecialchars($formData['commission_percent']); ?>">
-                    </div>
+                            <div class="field-group horizontal-field">
+                                <label>🔢 رقم الحلاق</label>
+                                <input type="text" name="barber_number" required value="<?php echo htmlspecialchars($formData['barber_number']); ?>">
+                            </div>
 
-                    <div class="form-actions-row barbers-actions-row">
-                        <button type="submit" class="btn <?php echo $editMode ? 'btn-warning' : 'btn-success'; ?>">
-                            <?php echo $editMode ? '✏️ تعديل' : '➕ إضافة'; ?>
-                        </button>
-                        <a href="barbers.php" class="btn btn-secondary">🧹 جديد</a>
-                    </div>
-                </form>
+                            <div class="field-group horizontal-field">
+                                <label>🕘 ميعاد الحضور</label>
+                                <div class="time-selects">
+                                    <select name="attendance_hour" required>
+                                        <option value="">الساعة</option>
+                                        <?php foreach ($hours as $hour) { ?>
+                                            <option value="<?php echo $hour; ?>" <?php if ($attendanceParts['hour'] === (string) $hour) echo 'selected'; ?>><?php echo $hour; ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <select name="attendance_minute" required>
+                                        <?php foreach ($minutes as $minute) { ?>
+                                            <option value="<?php echo $minute; ?>" <?php if ($attendanceParts['minute'] === $minute) echo 'selected'; ?>><?php echo $minute; ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <select name="attendance_period" required>
+                                        <option value="AM" <?php if ($attendanceParts['period'] === 'AM') echo 'selected'; ?>>صباحًا</option>
+                                        <option value="PM" <?php if ($attendanceParts['period'] === 'PM') echo 'selected'; ?>>مساءً</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field-group horizontal-field">
+                                <label>🌙 ميعاد الانصراف</label>
+                                <div class="time-selects">
+                                    <select name="departure_hour" required>
+                                        <option value="">الساعة</option>
+                                        <?php foreach ($hours as $hour) { ?>
+                                            <option value="<?php echo $hour; ?>" <?php if ($departureParts['hour'] === (string) $hour) echo 'selected'; ?>><?php echo $hour; ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <select name="departure_minute" required>
+                                        <?php foreach ($minutes as $minute) { ?>
+                                            <option value="<?php echo $minute; ?>" <?php if ($departureParts['minute'] === $minute) echo 'selected'; ?>><?php echo $minute; ?></option>
+                                        <?php } ?>
+                                    </select>
+                                    <select name="departure_period" required>
+                                        <option value="AM" <?php if ($departureParts['period'] === 'AM') echo 'selected'; ?>>صباحًا</option>
+                                        <option value="PM" <?php if ($departureParts['period'] === 'PM') echo 'selected'; ?>>مساءً</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field-group horizontal-field barber-wide-field">
+                                <label>🗓️ أيام الإجازة</label>
+                                <div class="off-days-panel">
+                                    <div class="off-days-panel-head">
+                                        <strong>اختر يومًا أو أكثر</strong>
+                                        <span>يمكن تحديد أكثر من يوم إجازة للحلاق من خلال البطاقات التالية.</span>
+                                    </div>
+                                    <div class="off-days-grid">
+                                        <?php foreach ($weekDays as $dayKey => $dayLabel) { ?>
+                                            <label class="off-day-option">
+                                                <input type="checkbox" name="off_days[]" value="<?php echo $dayKey; ?>" <?php if (in_array($dayKey, $formData['off_days'], true)) echo 'checked'; ?>>
+                                                <span class="off-day-pill">
+                                                    <span class="off-day-check">✓</span>
+                                                    <span class="off-day-text"><?php echo htmlspecialchars($dayLabel); ?></span>
+                                                </span>
+                                            </label>
+                                        <?php } ?>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field-group horizontal-field">
+                                <label>💯 النسبة المئوية</label>
+                                <input type="number" name="commission_percent" min="0" max="100" step="0.01" required value="<?php echo htmlspecialchars($formData['commission_percent']); ?>">
+                            </div>
+
+                            <div class="form-actions-row barbers-actions-row">
+                                <button type="submit" class="btn <?php echo $editMode ? 'btn-warning' : 'btn-success'; ?>">
+                                    <?php echo $editMode ? '✏️ تعديل' : '➕ إضافة'; ?>
+                                </button>
+                                <a href="barbers.php" class="btn btn-secondary">🧹 جديد</a>
+                            </div>
+                        </form>
+                    </section>
+                </div>
 
                 <div class="table-wrap">
                     <table class="data-table barbers-table responsive-table">
