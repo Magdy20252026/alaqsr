@@ -462,7 +462,7 @@ body.dark-mode .login-error-box {
 }
 
 .sidebar::-webkit-scrollbar {
-    width: 14px;
+    width: 16px;
 }
 
 .sidebar::-webkit-scrollbar-track {
@@ -647,7 +647,7 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
 .page-subtitle {
     margin-top: 6px;
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--sub-text);
     line-height: 1.8;
 }
@@ -853,6 +853,12 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
     border-color: rgba(37, 99, 235, 0.28);
 }
 
+.off-day-option input:focus-visible + .off-day-pill {
+    outline: 3px solid rgba(37, 99, 235, 0.28);
+    outline-offset: 3px;
+    border-color: rgba(37, 99, 235, 0.42);
+}
+
 .off-day-option input:checked + .off-day-pill {
     background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(236, 72, 153, 0.14));
     border-color: rgba(37, 99, 235, 0.45);
@@ -919,6 +925,11 @@ body.dark-mode .off-day-option input:checked + .off-day-pill {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(59, 130, 246, 0.18));
     border-color: rgba(245, 158, 11, 0.30);
     box-shadow: 0 14px 30px rgba(245, 158, 11, 0.10);
+}
+
+body.dark-mode .off-day-option input:focus-visible + .off-day-pill {
+    outline-color: rgba(245, 158, 11, 0.30);
+    border-color: rgba(245, 158, 11, 0.34);
 }
 
 body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
