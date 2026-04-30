@@ -659,6 +659,65 @@ body.dark-mode .login-error-box {
     justify-content: flex-start;
 }
 
+.barbers-form-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.barber-wide-field {
+    grid-column: span 2;
+}
+
+.barbers-actions-row {
+    justify-content: flex-start;
+}
+
+.time-selects {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.field-group select[multiple] {
+    height: auto;
+    min-height: 196px;
+    padding: 12px;
+}
+
+.barbers-table {
+    min-width: 100%;
+}
+
+.day-badges {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.day-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.18), rgba(37, 99, 235, 0.16));
+    color: var(--text-color);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.empty-badge {
+    background: rgba(100, 116, 139, 0.16);
+}
+
+body.dark-mode .day-badge {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(59, 130, 246, 0.18));
+    border-color: rgba(148, 163, 184, 0.22);
+}
+
 .table-wrap {
     width: 100%;
     overflow-x: auto;
@@ -760,6 +819,10 @@ body.dark-mode .login-error-box {
     }
 
     .services-form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .barbers-form-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -906,6 +969,18 @@ body.dark-mode .login-error-box {
         grid-template-columns: 1fr;
     }
 
+    .barbers-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .barber-wide-field {
+        grid-column: span 1;
+    }
+
+    .time-selects {
+        grid-template-columns: 1fr;
+    }
+
     .permissions-grid {
         grid-template-columns: 1fr;
     }
@@ -995,6 +1070,10 @@ body.dark-mode .login-error-box {
     }
 
     .responsive-table .action-cell {
+        justify-content: flex-start;
+    }
+
+    .responsive-table .day-badges {
         justify-content: flex-start;
     }
 }
