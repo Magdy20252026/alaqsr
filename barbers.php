@@ -105,15 +105,12 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    $barcodeColumnStmt = $conn->query("SHOW COLUMNS FROM barbers LIKE 'barber_barcode'");
-    if (!$barcodeColumnStmt->fetch(PDO::FETCH_ASSOC)) {
-        try {
-            $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
-        } catch (PDOException $migrationException) {
-            $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === 1060;
-            if (!$duplicateColumn) {
-                throw $migrationException;
-            }
+    try {
+        $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
+    } catch (PDOException $migrationException) {
+        $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === 1060;
+        if (!$duplicateColumn) {
+            throw $migrationException;
         }
     }
 } catch (PDOException $e) {
@@ -190,24 +187,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'off_days' => normalizeBarberOffDays($_POST['off_days'] ?? [], $weekDays),
         'commission_percent' => trim($_POST['commission_percent'] ?? '')
     ];
-    if ($formData['barber_barcode'] === '') {
-        $formData['barber_barcode'] = $formData['barber_number'];
-    }
     $editMode = $formData['id'] !== '';
 
     if ($formData['barber_name'] === '' || $formData['barber_number'] === '') {
         $errorMessage = '⚠️ الاسم ورقم الحلاق مطلوبان';
-    } elseif (
+    }
+
+    if ($errorMessage === '' && $formData['barber_barcode'] === '') {
+        $formData['barber_barcode'] = $formData['barber_number'];
+    }
+
+    if ($errorMessage === '' && (
         getBarberTextLength($formData['barber_name']) > 255
         || getBarberTextLength($formData['barber_number']) > 100
         || getBarberTextLength($formData['barber_barcode']) > 100
-    ) {
+    )) {
         $errorMessage = '⚠️ تحقق من طول البيانات المدخلة';
-    } elseif ($formData['attendance_time'] === null || $formData['departure_time'] === null) {
+    } elseif ($errorMessage === '' && ($formData['attendance_time'] === null || $formData['departure_time'] === null)) {
         $errorMessage = '⚠️ اختر مواعيد صحيحة بنظام 12 ساعة';
-    } elseif (!preg_match('/^\d+(?:\.\d{1,2})?$/', $formData['commission_percent'])) {
+    } elseif ($errorMessage === '' && !preg_match('/^\d+(?:\.\d{1,2})?$/', $formData['commission_percent'])) {
         $errorMessage = '⚠️ النسبة يجب أن تكون رقمًا صحيحًا أو عشريًا';
-    } else {
+    } elseif ($errorMessage === '') {
         $commissionValue = (float) $formData['commission_percent'];
 
         if ($commissionValue < 0 || $commissionValue > 100) {
