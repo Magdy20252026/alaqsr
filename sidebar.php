@@ -14,7 +14,7 @@
 
         <?php if (canAccess('users')) { ?><a href="users.php" class="menu-btn users-btn <?php echo $currentPage === 'users.php' ? 'active-btn' : ''; ?>">👥 المستخدمين</a><?php } ?>
         <?php if (canAccess('user_permissions')) { ?><a href="user_permissions.php" class="menu-btn permissions-btn <?php echo $currentPage === 'user_permissions.php' ? 'active-btn' : ''; ?>">🛡️ صلاحيات المستخدمين</a><?php } ?>
-        <?php if (canAccess('services')) { ?><a href="#" class="menu-btn services-btn">✂️ الخدمات</a><?php } ?>
+        <?php if (canAccess('services')) { ?><a href="services.php" class="menu-btn services-btn <?php echo $currentPage === 'services.php' ? 'active-btn' : ''; ?>">✂️ الخدمات</a><?php } ?>
         <?php if (canAccess('barbers')) { ?><a href="#" class="menu-btn barbers-btn">💈 الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_attendance')) { ?><a href="#" class="menu-btn attendance-btn">📅 حضور الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_loans')) { ?><a href="#" class="menu-btn loans-btn">💵 سلف الحلاقين</a><?php } ?>
