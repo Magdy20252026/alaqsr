@@ -11,14 +11,19 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-$conn->exec(
-    "CREATE TABLE IF NOT EXISTS services (
-        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        service_name VARCHAR(255) NOT NULL,
-        price DECIMAL(10,2) NOT NULL DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
-);
+try {
+    $conn->exec(
+        "CREATE TABLE IF NOT EXISTS services (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            service_name VARCHAR(255) NOT NULL,
+            price DECIMAL(10,2) NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+} catch (PDOException $e) {
+    http_response_code(500);
+    die("تعذر تجهيز صفحة الخدمات");
+}
 
 $settings = getSiteSettings($conn);
 $editService = null;
@@ -66,7 +71,7 @@ if (isset($_GET['edit'])) {
     $editService = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
 
-$services = $conn->query("SELECT * FROM services ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$services = $conn->query("SELECT id, service_name, price FROM services ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
