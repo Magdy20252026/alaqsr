@@ -105,9 +105,12 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    $barcodeColumnStmt = $conn->query("SHOW COLUMNS FROM barbers LIKE 'barber_barcode'");
-    if (!$barcodeColumnStmt->fetch(PDO::FETCH_ASSOC)) {
-        $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
+    if (empty($_SESSION['barbers_barcode_schema_checked'])) {
+        $barcodeColumnStmt = $conn->query("SHOW COLUMNS FROM barbers LIKE 'barber_barcode'");
+        if (!$barcodeColumnStmt->fetch(PDO::FETCH_ASSOC)) {
+            $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
+        }
+        $_SESSION['barbers_barcode_schema_checked'] = true;
     }
 } catch (PDOException $e) {
     http_response_code(500);
@@ -183,10 +186,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'off_days' => normalizeBarberOffDays($_POST['off_days'] ?? [], $weekDays),
         'commission_percent' => trim($_POST['commission_percent'] ?? '')
     ];
+    if ($formData['barber_barcode'] === '') {
+        $formData['barber_barcode'] = $formData['barber_number'];
+    }
     $editMode = $formData['id'] !== '';
 
-    if ($formData['barber_name'] === '' || $formData['barber_number'] === '' || $formData['barber_barcode'] === '') {
-        $errorMessage = '⚠️ الاسم ورقم الحلاق وباركود الحلاق مطلوبة';
+    if ($formData['barber_name'] === '' || $formData['barber_number'] === '') {
+        $errorMessage = '⚠️ الاسم ورقم الحلاق مطلوبان';
     } elseif (
         getBarberTextLength($formData['barber_name']) > 255
         || getBarberTextLength($formData['barber_number']) > 100
@@ -345,7 +351,7 @@ $averageCommission = $barbersCount > 0 ? $commissionPercentTotal / $barbersCount
 
                             <div class="field-group horizontal-field">
                                 <label>🏷️ باركود الحلاق</label>
-                                <input type="text" name="barber_barcode" required value="<?php echo htmlspecialchars($formData['barber_barcode']); ?>">
+                                <input type="text" name="barber_barcode" value="<?php echo htmlspecialchars($formData['barber_barcode']); ?>" placeholder="يُستخدم رقم الحلاق تلقائيًا إذا تُرك فارغًا">
                             </div>
 
                             <div class="field-group horizontal-field">
