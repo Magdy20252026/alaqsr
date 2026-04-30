@@ -71,7 +71,9 @@ if (isset($_GET['edit'])) {
     $editService = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 }
 
-$services = $conn->query("SELECT id, service_name, price FROM services ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$servicesStmt = $conn->prepare("SELECT id, service_name, price FROM services ORDER BY id DESC");
+$servicesStmt->execute();
+$services = $servicesStmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -104,7 +106,7 @@ $services = $conn->query("SELECT id, service_name, price FROM services ORDER BY 
                 </div>
 
                 <form method="post" class="inline-form services-form-grid">
-                    <input type="hidden" name="id" value="<?php echo $editService['id'] ?? ''; ?>">
+                    <input type="hidden" name="id" value="<?php echo isset($editService['id']) ? (int) $editService['id'] : ''; ?>">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
                     <div class="field-group horizontal-field">
@@ -114,7 +116,7 @@ $services = $conn->query("SELECT id, service_name, price FROM services ORDER BY 
 
                     <div class="field-group horizontal-field">
                         <label>💵 السعر</label>
-                        <input type="number" name="price" min="0" step="0.01" required value="<?php echo htmlspecialchars($editService['price'] ?? ''); ?>">
+                        <input type="number" name="price" min="0" step="0.01" required value="<?php echo isset($editService['price']) ? number_format((float) $editService['price'], 2, '.', '') : ''; ?>">
                     </div>
 
                     <div class="form-actions-row services-actions-row">
