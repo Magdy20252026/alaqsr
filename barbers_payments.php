@@ -527,7 +527,7 @@ if ($selectedBarberId > 0 && isset($barbersById[$selectedBarberId])) {
 
                                     <div class="field-group horizontal-field">
                                         <label>مبلغ قبض الحلاق</label>
-                                        <input type="number" name="payment_amount" min="0.01" step="0.01" required value="<?php echo htmlspecialchars($paymentAmountValue !== '' ? $paymentAmountValue : formatBarberPaymentAmount($selectedSummary['net_total'])); ?>">
+                                        <input type="number" name="payment_amount" min="0.01" step="0.01" required value="<?php echo htmlspecialchars($paymentAmountValue !== '' ? $paymentAmountValue : ($selectedSummary['net_total'] > 0 ? formatBarberPaymentAmount($selectedSummary['net_total']) : '')); ?>">
                                     </div>
 
                                     <div class="form-actions-row barber-payment-actions-row">
