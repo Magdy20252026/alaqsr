@@ -234,12 +234,12 @@ foreach ($items as $item) {
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
                     <div class="field-group horizontal-field items-wide-field">
-                        <label>اسم الصنف</label>
-                        <input type="text" name="item_name" required value="<?php echo htmlspecialchars($formData['item_name']); ?>">
+                        <label for="itemName">اسم الصنف</label>
+                        <input type="text" id="itemName" name="item_name" required value="<?php echo htmlspecialchars($formData['item_name']); ?>">
                     </div>
 
                     <div class="field-group horizontal-field">
-                        <label>نوع التسجيل</label>
+                        <label for="itemPricingType">نوع التسجيل</label>
                         <select name="pricing_type" id="itemPricingType" data-item-pricing-type>
                             <?php foreach ($pricingTypes as $pricingTypeKey => $pricingTypeLabel) { ?>
                                 <option value="<?php echo htmlspecialchars($pricingTypeKey); ?>" <?php echo $formData['pricing_type'] === $pricingTypeKey ? 'selected' : ''; ?>>
@@ -250,13 +250,13 @@ foreach ($items as $item) {
                     </div>
 
                     <div class="field-group horizontal-field <?php echo $formData['pricing_type'] === 'quantity_price' ? '' : 'items-quantity-hidden'; ?>" data-item-quantity-field>
-                        <label>العدد</label>
-                        <input type="number" name="quantity_value" min="0.01" step="0.01" <?php echo $formData['pricing_type'] === 'quantity_price' ? 'required' : ''; ?> value="<?php echo htmlspecialchars($formData['quantity_value']); ?>">
+                        <label for="itemQuantity">العدد</label>
+                        <input type="number" id="itemQuantity" name="quantity_value" min="0.01" step="0.01" <?php echo $formData['pricing_type'] === 'quantity_price' ? 'required' : ''; ?> value="<?php echo htmlspecialchars($formData['quantity_value']); ?>">
                     </div>
 
                     <div class="field-group horizontal-field">
-                        <label>السعر</label>
-                        <input type="number" name="item_price" min="0" step="0.01" required value="<?php echo htmlspecialchars($formData['item_price']); ?>">
+                        <label for="itemPrice">السعر</label>
+                        <input type="number" id="itemPrice" name="item_price" min="0" step="0.01" required value="<?php echo htmlspecialchars($formData['item_price']); ?>">
                     </div>
 
                     <div class="form-actions-row items-actions-row">
