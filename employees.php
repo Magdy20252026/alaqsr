@@ -281,9 +281,6 @@ $registeredOffDaysCount = 0;
 foreach ($employees as $employeeSummary) {
     $salaryTotal += (float) ($employeeSummary['salary_amount'] ?? 0);
     $registeredOffDays = json_decode($employeeSummary['off_days'] ?? '[]', true);
-    if (!is_array($registeredOffDays)) {
-        $registeredOffDays = [];
-    }
     $registeredOffDaysCount += count(normalizeEmployeeOffDays($registeredOffDays, $weekDays));
 }
 
@@ -318,7 +315,7 @@ $averageSalary = $employeesCount > 0 ? $salaryTotal / $employeesCount : 0;
                 <div class="page-header">
                     <div>
                         <h1 class="section-title">🧑‍💼 الموظفين</h1>
-                        <p class="barbers-page-subtitle">إدارة بيانات الموظفين، مواعيدهم، وأيام الإجازة مع تسجيل الراتب من نفس واجهة الحلاقين.</p>
+                        <p class="barbers-page-subtitle">إدارة بيانات الموظفين، مواعيدهم، وأيام الإجازة مع حفظ الرواتب من واجهة واضحة وسهلة الاستخدام.</p>
                     </div>
                 </div>
 
