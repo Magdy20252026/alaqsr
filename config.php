@@ -2,6 +2,7 @@
 const APP_TIMEZONE = 'Africa/Cairo';
 
 date_default_timezone_set(APP_TIMEZONE);
+define('APP_TIMEZONE_OFFSET', (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P'));
 session_start();
 
 $host = "sql208.infinityfree.com";
@@ -16,8 +17,8 @@ try {
     try {
         $conn->exec('SET time_zone = ' . $conn->quote(APP_TIMEZONE));
     } catch (PDOException $timezoneException) {
-        $appTimezoneOffset = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P');
-        $conn->exec('SET time_zone = ' . $conn->quote($appTimezoneOffset));
+        error_log('MySQL named timezone unavailable; falling back to offset: ' . $timezoneException->getMessage());
+        $conn->exec('SET time_zone = ' . $conn->quote(APP_TIMEZONE_OFFSET));
     }
 } catch (PDOException $e) {
     die("فشل الاتصال بقاعدة البيانات أو ضبط التوقيت");
