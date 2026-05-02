@@ -141,7 +141,7 @@ try {
     }
 } catch (PDOException $e) {
     http_response_code(500);
-    die("تعذر تجهيز صفحة الموظفين");
+    die("تعذر تجهيز جدول وصفحة الموظفين");
 }
 
 $settings = getSiteSettings($conn);
@@ -327,11 +327,11 @@ $averageSalary = $employeesCount > 0 ? $salaryTotal / $employeesCount : 0;
                 <div class="page-header">
                     <div>
                         <h1 class="section-title">🧑‍💼 الموظفين</h1>
-                        <p class="barbers-page-subtitle">إدارة بيانات الموظفين، مواعيدهم، وأيام الإجازة مع حفظ الرواتب من واجهة واضحة وسهلة الاستخدام.</p>
+                        <p class="page-subtitle">إدارة بيانات الموظفين، مواعيدهم، وأيام الإجازة مع حفظ الرواتب من واجهة واضحة وسهلة الاستخدام.</p>
                     </div>
                 </div>
 
-                <div class="barbers-overview">
+                <div class="staff-overview">
                     <div class="overview-card">
                         <span class="overview-label">إجمالي الموظفين</span>
                         <strong class="overview-value"><?php echo $employeesCount; ?></strong>
@@ -350,14 +350,14 @@ $averageSalary = $employeesCount > 0 ? $salaryTotal / $employeesCount : 0;
                     <div class="login-error-box"><?php echo $errorMessage; ?></div>
                 <?php } ?>
 
-                <div class="barbers-management-layout">
-                    <section class="barber-form-card">
-                        <div class="barber-card-head">
+                <div class="staff-management-layout">
+                    <section class="staff-form-card">
+                        <div class="staff-card-head">
                             <h2><?php echo $editMode ? 'تعديل بيانات الموظف' : 'إضافة موظف جديد'; ?></h2>
                             <p>أدخل البيانات الأساسية وحدد أكثر من يوم إجازة بسهولة، مع حفظ الراتب وباركود الموظف.</p>
                         </div>
 
-                        <form method="post" class="inline-form barbers-form-grid">
+                        <form method="post" class="inline-form staff-form-grid">
                             <input type="hidden" name="id" value="<?php echo htmlspecialchars($formData['id']); ?>">
                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
 
@@ -418,7 +418,7 @@ $averageSalary = $employeesCount > 0 ? $salaryTotal / $employeesCount : 0;
                                 </div>
                             </div>
 
-                            <div class="field-group horizontal-field barber-wide-field">
+                            <div class="field-group horizontal-field staff-wide-field">
                                 <label>🗓️ أيام الإجازة</label>
                                 <div class="off-days-panel">
                                     <div class="off-days-panel-head">
@@ -444,7 +444,7 @@ $averageSalary = $employeesCount > 0 ? $salaryTotal / $employeesCount : 0;
                                 <input type="number" name="salary_amount" min="0" step="0.01" required value="<?php echo htmlspecialchars($formData['salary_amount']); ?>">
                             </div>
 
-                            <div class="form-actions-row barbers-actions-row">
+                            <div class="form-actions-row staff-actions-row">
                                 <button type="submit" class="btn <?php echo $editMode ? 'btn-warning' : 'btn-success'; ?>">
                                     <?php echo $editMode ? '✏️ تعديل' : '➕ إضافة'; ?>
                                 </button>
@@ -455,7 +455,7 @@ $averageSalary = $employeesCount > 0 ? $salaryTotal / $employeesCount : 0;
                 </div>
 
                 <div class="table-wrap">
-                    <table class="data-table barbers-table responsive-table">
+                    <table class="data-table staff-table responsive-table">
                         <thead>
                             <tr>
                                 <th>#</th>
