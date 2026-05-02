@@ -52,13 +52,13 @@ function parseAttendanceDateTime($dateValue, $timeValue)
         return null;
     }
 
-    $normalizedTime = strtoupper(trim($timeValue));
+    $normalizedTime = preg_replace('/\s+/', '', strtoupper(trim($timeValue)));
 
-    if (!preg_match('/^(0?[1-9]|1[0-2]):([0-5][0-9])\s?(AM|PM)$/i', $normalizedTime)) {
+    if (!preg_match('/^(0?[1-9]|1[0-2]):([0-5][0-9])(AM|PM)$/', $normalizedTime)) {
         return null;
     }
 
-    $dateTime = DateTimeImmutable::createFromFormat('Y-m-d h:i A', $dateValue . ' ' . $normalizedTime);
+    $dateTime = DateTimeImmutable::createFromFormat('Y-m-d h:iA', $dateValue . ' ' . $normalizedTime);
 
     if (!$dateTime) {
         return null;
@@ -678,7 +678,8 @@ foreach ($attendanceRecords as $recordSummary) {
             const closeCameraButton = document.getElementById('closeCameraScanner');
             const cameraVideo = document.getElementById('cameraScannerVideo');
             const cameraStatus = document.getElementById('cameraScannerStatus');
-            const SCAN_INTERVAL_MS = 350;
+            const SCAN_INTERVAL_MILLISECONDS = 350;
+            const MOBILE_MEDIA_QUERY = '(max-width: 768px), (pointer: coarse)';
             let cameraStream = null;
             let scanTimer = null;
             let detector = null;
@@ -691,7 +692,7 @@ foreach ($attendanceRecords as $recordSummary) {
             }
 
             function isMobileDevice() {
-                return window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+                return window.matchMedia(MOBILE_MEDIA_QUERY).matches;
             }
 
             function refreshCameraButton() {
@@ -754,7 +755,7 @@ foreach ($attendanceRecords as $recordSummary) {
                     cameraStatus.textContent = 'تعذر قراءة الباركود';
                 }
 
-                scanTimer = setTimeout(scanFrame, SCAN_INTERVAL_MS);
+                scanTimer = setTimeout(scanFrame, SCAN_INTERVAL_MILLISECONDS);
             }
 
             async function startCameraScanner() {
