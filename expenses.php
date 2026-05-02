@@ -11,10 +11,20 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-const MYSQL_ERROR_DUPLICATE_COLUMN = 1060;
-
 $isManager = isset($_SESSION['role']) && $_SESSION['role'] === APP_MANAGER_ROLE;
 $currentUserId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+
+function expensesColumnExists(PDO $conn, $columnName)
+{
+    $stmt = $conn->prepare(
+        "SELECT COUNT(*)
+         FROM information_schema.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'expenses' AND COLUMN_NAME = ?"
+    );
+    $stmt->execute([$columnName]);
+
+    return (int) $stmt->fetchColumn() > 0;
+}
 
 try {
     $conn->exec(
@@ -30,44 +40,24 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    try {
+    if (!expensesColumnExists($conn, 'description')) {
         $conn->exec("ALTER TABLE expenses ADD COLUMN description VARCHAR(500) NOT NULL DEFAULT '' AFTER id");
-    } catch (PDOException $exception) {
-        if ((int) ($exception->errorInfo[1] ?? 0) !== MYSQL_ERROR_DUPLICATE_COLUMN) {
-            throw $exception;
-        }
     }
 
-    try {
+    if (!expensesColumnExists($conn, 'amount')) {
         $conn->exec("ALTER TABLE expenses ADD COLUMN amount DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER description");
-    } catch (PDOException $exception) {
-        if ((int) ($exception->errorInfo[1] ?? 0) !== MYSQL_ERROR_DUPLICATE_COLUMN) {
-            throw $exception;
-        }
     }
 
-    try {
+    if (!expensesColumnExists($conn, 'recorded_by')) {
         $conn->exec("ALTER TABLE expenses ADD COLUMN recorded_by INT UNSIGNED DEFAULT NULL AFTER amount");
-    } catch (PDOException $exception) {
-        if ((int) ($exception->errorInfo[1] ?? 0) !== MYSQL_ERROR_DUPLICATE_COLUMN) {
-            throw $exception;
-        }
     }
 
-    try {
+    if (!expensesColumnExists($conn, 'created_at')) {
         $conn->exec("ALTER TABLE expenses ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER recorded_by");
-    } catch (PDOException $exception) {
-        if ((int) ($exception->errorInfo[1] ?? 0) !== MYSQL_ERROR_DUPLICATE_COLUMN) {
-            throw $exception;
-        }
     }
 
-    try {
+    if (!expensesColumnExists($conn, 'updated_at')) {
         $conn->exec("ALTER TABLE expenses ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
-    } catch (PDOException $exception) {
-        if ((int) ($exception->errorInfo[1] ?? 0) !== MYSQL_ERROR_DUPLICATE_COLUMN) {
-            throw $exception;
-        }
     }
 } catch (PDOException $e) {
     http_response_code(500);
@@ -137,13 +127,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errorMessage = 'أدخل البيان والمبلغ';
     } elseif (getTextLength($formData['description']) > 500) {
         $errorMessage = 'البيان يجب ألا يزيد على 500 حرف';
-    } elseif (getTextLength($formData['amount']) > 20 || !preg_match('/^\d+(?:\.\d{1,2})?$/', $formData['amount'])) {
+    } elseif (!preg_match('/^\d{1,8}(?:\.\d{1,2})?$/', $formData['amount'])) {
         $errorMessage = 'المبلغ يجب أن يكون رقمًا صحيحًا أو عشريًا';
     } else {
         $amountValue = (float) $formData['amount'];
 
         if ($amountValue <= 0) {
             $errorMessage = 'المبلغ يجب أن يكون أكبر من صفر';
+        } elseif ($amountValue > 99999999.99) {
+            $errorMessage = 'المبلغ أكبر من الحد المسموح';
         } elseif ($currentUserId <= 0 && $formData['id'] === '') {
             $errorMessage = 'تعذر تحديد المستخدم الحالي';
         } else {
