@@ -11,7 +11,7 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-function getLoanTextLength($value)
+function getTextLength($value)
 {
     if (function_exists('mb_strlen')) {
         return mb_strlen($value);
@@ -35,7 +35,7 @@ function formatLoanDateTime($value)
     return date('Y-m-d h:i A', $timestamp);
 }
 
-$isManager = isset($_SESSION['role']) && $_SESSION['role'] === 'مدير';
+$isManager = isset($_SESSION['role']) && $_SESSION['role'] === APP_MANAGER_ROLE;
 
 try {
     $conn->exec(
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errorMessage = '⚠️ اختر الحلاق وأدخل المبلغ';
     } elseif (!ctype_digit($formData['barber_id'])) {
         $errorMessage = '⚠️ اختر حلاقًا صحيحًا';
-    } elseif (getLoanTextLength($formData['amount']) > 20 || !preg_match('/^\d+(?:\.\d{1,2})?$/', $formData['amount'])) {
+    } elseif (getTextLength($formData['amount']) > 20 || !preg_match('/^\d+(?:\.\d{1,2})?$/', $formData['amount'])) {
         $errorMessage = '⚠️ المبلغ يجب أن يكون رقمًا صحيحًا أو عشريًا';
     } else {
         $barberCheckStmt = $conn->prepare("SELECT barber_name FROM barbers WHERE id = ? LIMIT 1");

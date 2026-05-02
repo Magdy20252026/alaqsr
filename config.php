@@ -1,5 +1,6 @@
 <?php
 const APP_TIMEZONE = 'Africa/Cairo';
+const APP_MANAGER_ROLE = 'مدير';
 
 date_default_timezone_set(APP_TIMEZONE);
 define('APP_TIMEZONE_OFFSET', (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P'));
@@ -59,7 +60,7 @@ function canAccess($pageKey)
         return false;
     }
 
-    if ($_SESSION['role'] === 'مدير') {
+    if ($_SESSION['role'] === APP_MANAGER_ROLE) {
         return true;
     }
 
