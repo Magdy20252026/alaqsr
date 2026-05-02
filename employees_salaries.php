@@ -162,7 +162,7 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_employees_loans_employee_id (employee_id),
-            CONSTRAINT fk_employees_loans_employee_id_salary FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+            CONSTRAINT fk_employees_loans_employee_id FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
@@ -175,7 +175,7 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_employees_deductions_employee_id (employee_id),
-            CONSTRAINT fk_employees_deductions_employee_id_salary FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
+            CONSTRAINT fk_employees_deductions_employee_id FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
