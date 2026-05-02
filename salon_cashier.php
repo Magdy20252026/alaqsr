@@ -11,14 +11,58 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+const MYSQL_ERROR_DUPLICATE_COLUMN = 1060;
+
 function isCashierNumericValue($value)
 {
     return is_string($value) && preg_match('/^\d+(?:\.\d{1,2})?$/', $value) === 1;
 }
 
+function isCashierPhoneValue($value)
+{
+    return is_string($value) && preg_match('/^(?=.*\p{N})[\p{N}\+\-\s\(\)]+$/u', $value) === 1;
+}
+
 function formatCashierAmount($value)
 {
     return number_format((float) $value, 2, '.', '');
+}
+
+function ensureSalonInvoiceColumnExists($conn, $columnName)
+{
+    $alterQuery = null;
+
+    if ($columnName === 'customer_name') {
+        $alterQuery = "ALTER TABLE salon_invoices ADD COLUMN customer_name VARCHAR(255) NOT NULL DEFAULT '' AFTER barber_name";
+    } elseif ($columnName === 'customer_phone') {
+        $alterQuery = "ALTER TABLE salon_invoices ADD COLUMN customer_phone VARCHAR(50) NOT NULL DEFAULT '' AFTER customer_name";
+    } else {
+        throw new InvalidArgumentException('Unsupported salon invoice column');
+    }
+
+    $columnStmt = $conn->prepare(
+        "SELECT 1
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'salon_invoices'
+           AND COLUMN_NAME = ?
+         LIMIT 1"
+    );
+    $columnStmt->execute([$columnName]);
+
+    if ($columnStmt->fetchColumn()) {
+        return;
+    }
+
+    try {
+        $conn->exec($alterQuery);
+    } catch (PDOException $migrationException) {
+        $duplicateColumn = isset($migrationException->errorInfo[1])
+            && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
+        if (!$duplicateColumn) {
+            throw $migrationException;
+        }
+    }
 }
 
 function normalizeCashierDate($value)
@@ -94,6 +138,8 @@ try {
             employee_name VARCHAR(255) NOT NULL,
             barber_id INT UNSIGNED NOT NULL,
             barber_name VARCHAR(255) NOT NULL,
+            customer_name VARCHAR(255) NOT NULL DEFAULT '',
+            customer_phone VARCHAR(50) NOT NULL DEFAULT '',
             barber_commission_percent DECIMAL(5,2) NOT NULL DEFAULT 0,
             total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
             barber_share_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
@@ -105,6 +151,9 @@ try {
             INDEX idx_salon_invoices_barber_id (barber_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+
+    ensureSalonInvoiceColumnExists($conn, 'customer_name');
+    ensureSalonInvoiceColumnExists($conn, 'customer_phone');
 
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS salon_invoice_items (
@@ -173,6 +222,8 @@ $formData = [
     'id' => '',
     'employee_id' => '',
     'barber_id' => '',
+    'customer_name' => '',
+    'customer_phone' => '',
     'items' => [
         [
             'service_id' => '',
@@ -222,6 +273,8 @@ if (isset($_GET['edit'])) {
             'id' => (string) $editInvoice['id'],
             'employee_id' => (string) $editInvoice['employee_id'],
             'barber_id' => (string) $editInvoice['barber_id'],
+            'customer_name' => (string) ($editInvoice['customer_name'] ?? ''),
+            'customer_phone' => (string) ($editInvoice['customer_phone'] ?? ''),
             'items' => $preparedItems
         ];
     } else {
@@ -265,6 +318,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'id' => trim($_POST['id'] ?? ''),
             'employee_id' => trim($_POST['employee_id'] ?? ''),
             'barber_id' => trim($_POST['barber_id'] ?? ''),
+            'customer_name' => trim((string) ($_POST['customer_name'] ?? '')),
+            'customer_phone' => trim((string) ($_POST['customer_phone'] ?? '')),
             'items' => is_array($_POST['items'] ?? null) ? array_values($_POST['items']) : []
         ];
 
@@ -279,6 +334,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = 'اختر الموظف';
         } elseif ($formData['barber_id'] === '' || !isset($barbersById[(int) $formData['barber_id']])) {
             $errorMessage = 'اختر الحلاق';
+        } elseif ($formData['customer_name'] === '') {
+            $errorMessage = 'اكتب اسم العميل';
+        } elseif (getTextLength($formData['customer_name']) > 255) {
+            $errorMessage = 'اسم العميل طويل جدًا';
+        } elseif ($formData['customer_phone'] === '') {
+            $errorMessage = 'اكتب رقم هاتف العميل';
+        } elseif (getTextLength($formData['customer_phone']) > 50) {
+            $errorMessage = 'رقم الهاتف طويل جدًا';
+        } elseif (!isCashierPhoneValue($formData['customer_phone'])) {
+            $errorMessage = 'رقم الهاتف يحتوي على رموز غير صالحة';
         } elseif (!$formData['items']) {
             $errorMessage = 'أضف خدمة واحدة على الأقل';
         } else {
@@ -334,17 +399,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 employee_name,
                                 barber_id,
                                 barber_name,
+                                customer_name,
+                                customer_phone,
                                 barber_commission_percent,
                                 total_amount,
                                 barber_share_amount,
                                 salon_share_amount
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         );
                         $invoiceStmt->execute([
                             $employeeId,
                             $employeesById[$employeeId]['employee_name'],
                             $barberId,
                             $barbersById[$barberId]['barber_name'],
+                            $formData['customer_name'],
+                            $formData['customer_phone'],
                             formatCashierAmount($barberCommission),
                             formatCashierAmount($invoiceTotal),
                             formatCashierAmount($barberShare),
@@ -363,7 +432,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         $invoiceStmt = $conn->prepare(
                             "UPDATE salon_invoices
-                             SET employee_id = ?, employee_name = ?, barber_id = ?, barber_name = ?, barber_commission_percent = ?, total_amount = ?, barber_share_amount = ?, salon_share_amount = ?
+                             SET employee_id = ?, employee_name = ?, barber_id = ?, barber_name = ?, customer_name = ?, customer_phone = ?, barber_commission_percent = ?, total_amount = ?, barber_share_amount = ?, salon_share_amount = ?
                              WHERE id = ?"
                         );
                         $invoiceStmt->execute([
@@ -371,6 +440,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $employeesById[$employeeId]['employee_name'],
                             $barberId,
                             $barbersById[$barberId]['barber_name'],
+                            $formData['customer_name'],
+                            $formData['customer_phone'],
                             formatCashierAmount($barberCommission),
                             formatCashierAmount($invoiceTotal),
                             formatCashierAmount($barberShare),
@@ -448,6 +519,8 @@ $invoiceRowsStmt = $conn->prepare(
         id,
         employee_name,
         barber_name,
+        customer_name,
+        customer_phone,
         barber_commission_percent,
         total_amount,
         barber_share_amount,
@@ -555,7 +628,7 @@ if ($invoiceIds) {
                         <div class="page-header cashier-panel-header">
                             <div>
                                 <h2 class="section-title cashier-mini-title"><?php echo $formData['id'] !== '' ? '✏️ تعديل الفاتورة' : '➕ فاتورة جديدة'; ?></h2>
-                                <p class="page-subtitle">اختر الموظف والحلاق والخدمات ثم احفظ الفاتورة</p>
+                                <p class="page-subtitle">اختر الموظف والحلاق وسجل بيانات العميل والخدمات ثم احفظ الفاتورة</p>
                             </div>
                         </div>
 
@@ -585,6 +658,31 @@ if ($invoiceIds) {
                                         </option>
                                     <?php } ?>
                                 </select>
+                            </div>
+
+                            <div class="field-group horizontal-field">
+                                <label>👤 اسم العميل</label>
+                                <input
+                                    type="text"
+                                    name="customer_name"
+                                    maxlength="255"
+                                    required
+                                    value="<?php echo htmlspecialchars($formData['customer_name']); ?>"
+                                    <?php echo (!$employees || !$barbers || !$services) ? 'disabled' : ''; ?>
+                                >
+                            </div>
+
+                            <div class="field-group horizontal-field">
+                                <label>📞 رقم الهاتف</label>
+                                <input
+                                    type="tel"
+                                    name="customer_phone"
+                                    inputmode="tel"
+                                    maxlength="50"
+                                    required
+                                    value="<?php echo htmlspecialchars($formData['customer_phone']); ?>"
+                                    <?php echo (!$employees || !$barbers || !$services) ? 'disabled' : ''; ?>
+                                >
                             </div>
 
                             <div class="cashier-items-card">
@@ -695,6 +793,8 @@ if ($invoiceIds) {
                                         <th>🕒 الوقت</th>
                                         <th>��‍💼 الموظف</th>
                                         <th>💈 الحلاق</th>
+                                        <th>👤 العميل</th>
+                                        <th>📞 الهاتف</th>
                                         <th>✂️ الخدمات</th>
                                         <th>💵 الإجمالي</th>
                                         <?php if ($isManager) { ?>
@@ -714,6 +814,8 @@ if ($invoiceIds) {
                                                 <td data-label="🕒 الوقت"><?php echo formatDateTimeValue($invoiceRow['created_at']); ?></td>
                                                 <td data-label="🧑‍💼 الموظف"><?php echo htmlspecialchars($invoiceRow['employee_name']); ?></td>
                                                 <td data-label="💈 الحلاق"><?php echo htmlspecialchars($invoiceRow['barber_name']); ?></td>
+                                                <td data-label="👤 العميل"><?php echo htmlspecialchars($invoiceRow['customer_name'] !== '' ? $invoiceRow['customer_name'] : '—'); ?></td>
+                                                <td data-label="📞 الهاتف"><?php echo htmlspecialchars($invoiceRow['customer_phone'] !== '' ? $invoiceRow['customer_phone'] : '—'); ?></td>
                                                 <td data-label="✂️ الخدمات">
                                                     <div class="cashier-service-stack">
                                                         <?php foreach ($invoiceItemsByInvoiceId[$invoiceId] ?? [] as $invoiceItem) { ?>
@@ -742,7 +844,7 @@ if ($invoiceIds) {
                                         <?php } ?>
                                     <?php } else { ?>
                                         <tr>
-                                            <td colspan="<?php echo $isManager ? '10' : '6'; ?>">لا توجد فواتير في هذا اليوم</td>
+                                            <td colspan="<?php echo $isManager ? '12' : '8'; ?>">لا توجد فواتير في هذا اليوم</td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
