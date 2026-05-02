@@ -12,6 +12,7 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 const MYSQL_ERROR_DUPLICATE_COLUMN = 1060;
+const ATTENDANCE_GRACE_MINUTES = 15;
 
 function getAttendanceWeekDays()
 {
@@ -390,7 +391,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (empty($record['check_in_at'])) {
-                $graceAttendance = $scheduledAttendance->modify('+15 minutes');
+                $graceAttendance = $scheduledAttendance->modify('+' . ATTENDANCE_GRACE_MINUTES . ' minutes');
                 $attendanceStatus = $now <= $graceAttendance ? 'حضور في الموعد' : 'تأخير';
                 $checkInStmt = $conn->prepare(
                     "UPDATE barbers_attendance
@@ -662,6 +663,7 @@ foreach ($attendanceRecords as $recordSummary) {
             const closeCameraButton = document.getElementById('closeCameraScanner');
             const cameraVideo = document.getElementById('cameraScannerVideo');
             const cameraStatus = document.getElementById('cameraScannerStatus');
+            const SCAN_INTERVAL_MS = 350;
             let cameraStream = null;
             let scanTimer = null;
             let detector = null;
@@ -733,7 +735,7 @@ foreach ($attendanceRecords as $recordSummary) {
                     cameraStatus.textContent = 'تعذر قراءة الباركود';
                 }
 
-                scanTimer = setTimeout(scanFrame, 350);
+                scanTimer = setTimeout(scanFrame, SCAN_INTERVAL_MS);
             }
 
             async function startCameraScanner() {
