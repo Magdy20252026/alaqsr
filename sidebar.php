@@ -18,12 +18,12 @@
         <?php if (canAccess('barbers')) { ?><a href="barbers.php" class="menu-btn barbers-btn <?php echo $currentPage === 'barbers.php' ? 'active-btn' : ''; ?>">💈 الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_attendance')) { ?><a href="barbers_attendance.php" class="menu-btn attendance-btn <?php echo $currentPage === 'barbers_attendance.php' ? 'active-btn' : ''; ?>">📅 حضور الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_loans')) { ?><a href="barbers_loans.php" class="menu-btn loans-btn <?php echo $currentPage === 'barbers_loans.php' ? 'active-btn' : ''; ?>">💵 سلف الحلاقين</a><?php } ?>
-        <?php if (canAccess('barbers_deductions')) { ?><a href="#" class="menu-btn deductions-btn">📉 خصومات الحلاقين</a><?php } ?>
+        <?php if (canAccess('barbers_deductions')) { ?><a href="barbers_deductions.php" class="menu-btn deductions-btn <?php echo $currentPage === 'barbers_deductions.php' ? 'active-btn' : ''; ?>">📉 خصومات الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_payments')) { ?><a href="#" class="menu-btn payments-btn">💰 قبض حلاقين</a><?php } ?>
         <?php if (canAccess('employees')) { ?><a href="employees.php" class="menu-btn employees-btn <?php echo $currentPage === 'employees.php' ? 'active-btn' : ''; ?>">🧑‍💼 الموظفين</a><?php } ?>
         <?php if (canAccess('employees_attendance')) { ?><a href="employees_attendance.php" class="menu-btn attendance2-btn <?php echo $currentPage === 'employees_attendance.php' ? 'active-btn' : ''; ?>">🗓️ حضور الموظفين</a><?php } ?>
         <?php if (canAccess('employees_loans')) { ?><a href="employees_loans.php" class="menu-btn loans2-btn <?php echo $currentPage === 'employees_loans.php' ? 'active-btn' : ''; ?>">💸 سلف الموظفين</a><?php } ?>
-        <?php if (canAccess('employees_deductions')) { ?><a href="#" class="menu-btn deductions2-btn">➖ خصومات الموظفين</a><?php } ?>
+        <?php if (canAccess('employees_deductions')) { ?><a href="employees_deductions.php" class="menu-btn deductions2-btn <?php echo $currentPage === 'employees_deductions.php' ? 'active-btn' : ''; ?>">➖ خصومات الموظفين</a><?php } ?>
         <?php if (canAccess('employees_salaries')) { ?><a href="#" class="menu-btn salaries-btn">💳 قبض رواتب الموظفين</a><?php } ?>
         <?php if (canAccess('salon_cashier')) { ?><a href="#" class="menu-btn cashier-btn">🏦 كاشير الصالون</a><?php } ?>
         <?php if (canAccess('items')) { ?><a href="#" class="menu-btn items-btn">📦 الأصناف</a><?php } ?>
