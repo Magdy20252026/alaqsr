@@ -1,4 +1,7 @@
 <?php
+const APP_TIMEZONE = 'Africa/Cairo';
+
+date_default_timezone_set(APP_TIMEZONE);
 session_start();
 
 $host = "sql208.infinityfree.com";
@@ -9,6 +12,8 @@ $password = "6Mq8FJU02jepJ";
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $egyptOffset = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P');
+    $conn->exec("SET time_zone = '{$egyptOffset}'");
 } catch (PDOException $e) {
     die("فشل الاتصال بقاعدة البيانات");
 }
