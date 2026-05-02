@@ -258,7 +258,7 @@ try {
 
     if (!$barcodeColumnStmt->fetchColumn()) {
         try {
-            $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER barber_number");
+            $conn->exec("ALTER TABLE barbers ADD COLUMN barber_barcode VARCHAR(100) NOT NULL DEFAULT ''");
         } catch (PDOException $migrationException) {
             $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === MYSQL_ERROR_DUPLICATE_COLUMN;
             if (!$duplicateColumn) {
@@ -664,7 +664,7 @@ foreach ($attendanceRecords as $recordSummary) {
                 <button type="button" class="btn btn-danger camera-close-button" id="closeCameraScanner">إغلاق</button>
             </div>
             <video id="cameraScannerVideo" playsinline></video>
-            <div class="camera-sheet-status" id="cameraScannerStatus">وجّه الكاميرا نحو الباركود</div>
+            <div class="camera-sheet-status" id="cameraScannerStatus">وجّه الكاميرا نحو باركود Code 128 أو EAN أو QR</div>
         </div>
     </div>
 
@@ -679,7 +679,6 @@ foreach ($attendanceRecords as $recordSummary) {
             const cameraVideo = document.getElementById('cameraScannerVideo');
             const cameraStatus = document.getElementById('cameraScannerStatus');
             const SCAN_INTERVAL_MILLISECONDS = 350;
-            const MOBILE_MEDIA_QUERY = '(max-width: 768px), (pointer: coarse)';
             let cameraStream = null;
             let scanTimer = null;
             let detector = null;
@@ -692,15 +691,7 @@ foreach ($attendanceRecords as $recordSummary) {
             }
 
             function isMobileDevice() {
-                return window.matchMedia(MOBILE_MEDIA_QUERY).matches;
-            }
-
-            function refreshCameraButton() {
-                if (!openCameraButton) {
-                    return;
-                }
-
-                openCameraButton.style.display = isMobileDevice() ? 'inline-flex' : 'none';
+                return !!openCameraButton && window.getComputedStyle(openCameraButton).display !== 'none';
             }
 
             async function stopCameraScanner() {
@@ -778,7 +769,7 @@ foreach ($attendanceRecords as $recordSummary) {
                 }
 
                 try {
-                    cameraStatus.textContent = 'وجّه الكاميرا نحو الباركود';
+                    cameraStatus.textContent = 'وجّه الكاميرا نحو باركود Code 128 أو EAN أو QR';
                     cameraSheet.hidden = false;
                     cameraStream = await navigator.mediaDevices.getUserMedia({
                         video: {
@@ -795,9 +786,6 @@ foreach ($attendanceRecords as $recordSummary) {
                     cameraStatus.textContent = 'تعذر تشغيل الكاميرا';
                 }
             }
-
-            refreshCameraButton();
-            window.addEventListener('resize', refreshCameraButton);
 
             if (openCameraButton) {
                 openCameraButton.addEventListener('click', function () {
