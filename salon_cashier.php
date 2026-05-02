@@ -16,9 +16,41 @@ function isCashierNumericValue($value)
     return is_string($value) && preg_match('/^\d+(?:\.\d{1,2})?$/', $value) === 1;
 }
 
+function isCashierPhoneValue($value)
+{
+    return is_string($value) && preg_match('/^[\p{N}\+\-\s\(\)]+$/u', $value) === 1;
+}
+
 function formatCashierAmount($value)
 {
     return number_format((float) $value, 2, '.', '');
+}
+
+function ensureSalonInvoiceColumn($conn, $columnName, $definition, $position)
+{
+    $columnStmt = $conn->prepare(
+        "SELECT 1
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'salon_invoices'
+           AND COLUMN_NAME = ?
+         LIMIT 1"
+    );
+    $columnStmt->execute([$columnName]);
+
+    if ($columnStmt->fetchColumn()) {
+        return;
+    }
+
+    try {
+        $conn->exec("ALTER TABLE salon_invoices ADD COLUMN {$columnName} {$definition} AFTER {$position}");
+    } catch (PDOException $migrationException) {
+        $duplicateColumn = isset($migrationException->errorInfo[1])
+            && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
+        if (!$duplicateColumn) {
+            throw $migrationException;
+        }
+    }
 }
 
 function normalizeCashierDate($value)
@@ -108,49 +140,8 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    $customerNameColumnStmt = $conn->prepare(
-        "SELECT 1
-         FROM INFORMATION_SCHEMA.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE()
-           AND TABLE_NAME = 'salon_invoices'
-           AND COLUMN_NAME = 'customer_name'
-         LIMIT 1"
-    );
-    $customerNameColumnStmt->execute();
-
-    if (!$customerNameColumnStmt->fetchColumn()) {
-        try {
-            $conn->exec("ALTER TABLE salon_invoices ADD COLUMN customer_name VARCHAR(255) NOT NULL DEFAULT '' AFTER barber_name");
-        } catch (PDOException $migrationException) {
-            $duplicateColumn = isset($migrationException->errorInfo[1])
-                && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
-            if (!$duplicateColumn) {
-                throw $migrationException;
-            }
-        }
-    }
-
-    $customerPhoneColumnStmt = $conn->prepare(
-        "SELECT 1
-         FROM INFORMATION_SCHEMA.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE()
-           AND TABLE_NAME = 'salon_invoices'
-           AND COLUMN_NAME = 'customer_phone'
-         LIMIT 1"
-    );
-    $customerPhoneColumnStmt->execute();
-
-    if (!$customerPhoneColumnStmt->fetchColumn()) {
-        try {
-            $conn->exec("ALTER TABLE salon_invoices ADD COLUMN customer_phone VARCHAR(50) NOT NULL DEFAULT '' AFTER customer_name");
-        } catch (PDOException $migrationException) {
-            $duplicateColumn = isset($migrationException->errorInfo[1])
-                && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
-            if (!$duplicateColumn) {
-                throw $migrationException;
-            }
-        }
-    }
+    ensureSalonInvoiceColumn($conn, 'customer_name', "VARCHAR(255) NOT NULL DEFAULT ''", 'barber_name');
+    ensureSalonInvoiceColumn($conn, 'customer_phone', "VARCHAR(50) NOT NULL DEFAULT ''", 'customer_name');
 
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS salon_invoice_items (
@@ -339,6 +330,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMessage = 'اكتب رقم هاتف العميل';
         } elseif (getTextLength($formData['customer_phone']) > 50) {
             $errorMessage = 'رقم الهاتف طويل جدًا';
+        } elseif (!isCashierPhoneValue($formData['customer_phone'])) {
+            $errorMessage = 'رقم الهاتف يحتوي على رموز غير صالحة';
         } elseif (!$formData['items']) {
             $errorMessage = 'أضف خدمة واحدة على الأقل';
         } else {

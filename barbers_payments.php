@@ -28,6 +28,33 @@ function formatBarberPaymentAmount($value)
     return number_format((float) $value, 2, '.', '');
 }
 
+function ensureBarberPaymentSalonInvoiceColumn($conn, $columnName, $definition, $position)
+{
+    $columnStmt = $conn->prepare(
+        "SELECT 1
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'salon_invoices'
+           AND COLUMN_NAME = ?
+         LIMIT 1"
+    );
+    $columnStmt->execute([$columnName]);
+
+    if ($columnStmt->fetchColumn()) {
+        return;
+    }
+
+    try {
+        $conn->exec("ALTER TABLE salon_invoices ADD COLUMN {$columnName} {$definition} AFTER {$position}");
+    } catch (PDOException $migrationException) {
+        $duplicateColumn = isset($migrationException->errorInfo[1])
+            && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
+        if (!$duplicateColumn) {
+            throw $migrationException;
+        }
+    }
+}
+
 function getBarberPaymentMonthLabel($monthStart)
 {
     $timestamp = strtotime($monthStart);
@@ -206,6 +233,9 @@ try {
             INDEX idx_salon_invoices_barber_id (barber_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
+
+    ensureBarberPaymentSalonInvoiceColumn($conn, 'customer_name', "VARCHAR(255) NOT NULL DEFAULT ''", 'barber_name');
+    ensureBarberPaymentSalonInvoiceColumn($conn, 'customer_phone', "VARCHAR(50) NOT NULL DEFAULT ''", 'customer_name');
 
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS barbers_payments (
