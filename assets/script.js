@@ -225,4 +225,201 @@ document.addEventListener("DOMContentLoaded", function () {
         updateRemoveButtons();
         updateTotals();
     }
+
+    const salesInvoiceType = document.getElementById("salesInvoiceType");
+    const salesEmployeeField = document.querySelector("[data-sales-employee-field]");
+    const salesEmployeeSelect = document.getElementById("salesEmployeeSelect");
+    const salesItems = document.getElementById("salesCashierItems");
+    const salesAddItem = document.getElementById("addSalesCashierItem");
+    const salesTemplate = document.getElementById("salesCashierItemTemplate");
+    const salesTotalElement = document.getElementById("salesInvoiceTotal");
+    const salesItemsCountElement = document.getElementById("salesItemsCount");
+    const salesModeLabelElement = document.getElementById("salesInvoiceModeLabel");
+    const salesDataElement = document.getElementById("salesItemsData");
+
+    if (salesItems && salesTemplate && salesDataElement) {
+        const salesData = JSON.parse(salesDataElement.textContent || "{}");
+
+        function formatSalesMoney(value) {
+            return Number(value || 0).toFixed(2) + " ج";
+        }
+
+        function formatSalesQuantity(value) {
+            return Number(value || 0).toFixed(2);
+        }
+
+        function syncSalesInvoiceType() {
+            const isSaleInvoice = !salesInvoiceType || salesInvoiceType.value === "sale";
+
+            if (salesModeLabelElement && salesInvoiceType) {
+                salesModeLabelElement.textContent = isSaleInvoice ? "بيع" : "مرتجع";
+            }
+
+            if (salesEmployeeField) {
+                salesEmployeeField.classList.toggle("sales-employee-field-hidden", !isSaleInvoice);
+            }
+
+            if (salesEmployeeSelect) {
+                const hasEmployees = salesEmployeeSelect.getAttribute("data-no-employees") !== "1";
+                salesEmployeeSelect.required = isSaleInvoice;
+                salesEmployeeSelect.disabled = !isSaleInvoice || !hasEmployees;
+
+                if (!isSaleInvoice) {
+                    salesEmployeeSelect.value = "";
+                    salesEmployeeSelect.setCustomValidity("");
+                }
+            }
+        }
+
+        function updateSalesTotals() {
+            let total = 0;
+            const rows = salesItems.querySelectorAll("[data-sales-item]");
+
+            rows.forEach(function (row) {
+                const quantityInput = row.querySelector("[data-sales-quantity-input]");
+                const priceInput = row.querySelector("[data-sales-price-input]");
+                total += Number(quantityInput ? quantityInput.value : 0) * Number(priceInput ? priceInput.value : 0);
+            });
+
+            if (salesTotalElement) {
+                salesTotalElement.textContent = formatSalesMoney(total);
+            }
+
+            if (salesItemsCountElement) {
+                salesItemsCountElement.textContent = String(rows.length);
+            }
+        }
+
+        function updateSalesRemoveButtons() {
+            const rows = salesItems.querySelectorAll("[data-sales-item]");
+            rows.forEach(function (row) {
+                const removeButton = row.querySelector("[data-remove-sales-item]");
+                if (removeButton) {
+                    removeButton.disabled = rows.length === 1;
+                }
+            });
+        }
+
+        function updateSalesRow(row, shouldOverwritePrice) {
+            const itemSelect = row.querySelector("[data-sales-item-select]");
+            const quantityInput = row.querySelector("[data-sales-quantity-input]");
+            const priceInput = row.querySelector("[data-sales-price-input]");
+            const stockDisplay = row.querySelector("[data-sales-stock-display]");
+            const registeredPriceDisplay = row.querySelector("[data-sales-registered-price]");
+            const minPriceDisplay = row.querySelector("[data-sales-min-price]");
+            const lineTotalDisplay = row.querySelector("[data-sales-line-total]");
+            const itemData = salesData[itemSelect ? itemSelect.value : ""] || {
+                registered_price: 0,
+                min_price: 0,
+                available_quantity: null
+            };
+            const registeredPrice = Number(itemData.registered_price || 0);
+            const minPrice = Number(itemData.min_price || 0);
+            const availableQuantity = itemData.available_quantity;
+            const quantity = Number(quantityInput ? quantityInput.value : 0);
+
+            if (stockDisplay) {
+                stockDisplay.value = availableQuantity === null ? "غير متابع" : formatSalesQuantity(availableQuantity);
+            }
+
+            if (registeredPriceDisplay) {
+                registeredPriceDisplay.value = formatSalesMoney(registeredPrice);
+            }
+
+            if (minPriceDisplay) {
+                minPriceDisplay.value = formatSalesMoney(minPrice);
+            }
+
+            if (priceInput) {
+                priceInput.min = minPrice.toFixed(2);
+
+                if (shouldOverwritePrice || priceInput.value === "") {
+                    priceInput.value = registeredPrice.toFixed(2);
+                }
+
+                if (itemSelect && itemSelect.value && Number(priceInput.value || 0) < minPrice) {
+                    priceInput.setCustomValidity("لا يمكن أن يقل السعر عن 50% من السعر المسجل");
+                } else {
+                    priceInput.setCustomValidity("");
+                }
+            }
+
+            if (lineTotalDisplay) {
+                lineTotalDisplay.value = formatSalesMoney(quantity * Number(priceInput ? priceInput.value : 0));
+            }
+        }
+
+        function bindSalesRow(row) {
+            const itemSelect = row.querySelector("[data-sales-item-select]");
+            const quantityInput = row.querySelector("[data-sales-quantity-input]");
+            const priceInput = row.querySelector("[data-sales-price-input]");
+            const removeButton = row.querySelector("[data-remove-sales-item]");
+
+            if (itemSelect) {
+                itemSelect.addEventListener("change", function () {
+                    updateSalesRow(row, true);
+                    updateSalesTotals();
+                });
+            }
+
+            if (quantityInput) {
+                quantityInput.addEventListener("input", function () {
+                    updateSalesRow(row, false);
+                    updateSalesTotals();
+                });
+            }
+
+            if (priceInput) {
+                priceInput.addEventListener("input", function () {
+                    updateSalesRow(row, false);
+                    updateSalesTotals();
+                });
+            }
+
+            if (removeButton) {
+                removeButton.addEventListener("click", function () {
+                    if (salesItems.querySelectorAll("[data-sales-item]").length === 1) {
+                        return;
+                    }
+
+                    row.remove();
+                    updateSalesRemoveButtons();
+                    updateSalesTotals();
+                });
+            }
+
+            updateSalesRow(row, false);
+        }
+
+        salesItems.querySelectorAll("[data-sales-item]").forEach(function (row) {
+            bindSalesRow(row);
+        });
+
+        if (salesAddItem) {
+            salesAddItem.addEventListener("click", function () {
+                const nextIndex = Number(salesItems.getAttribute("data-next-index") || "0");
+                const templateHtml = salesTemplate.innerHTML.split("__INDEX__").join(String(nextIndex));
+                const wrapper = document.createElement("div");
+                wrapper.innerHTML = templateHtml.trim();
+                const row = wrapper.firstElementChild;
+
+                salesItems.appendChild(row);
+                salesItems.setAttribute("data-next-index", String(nextIndex + 1));
+                bindSalesRow(row);
+                updateSalesRemoveButtons();
+                updateSalesTotals();
+            });
+        }
+
+        if (salesInvoiceType) {
+            salesInvoiceType.addEventListener("change", function () {
+                syncSalesInvoiceType();
+                updateSalesTotals();
+            });
+        }
+
+        syncSalesInvoiceType();
+        updateSalesRemoveButtons();
+        updateSalesTotals();
+    }
 });

@@ -1021,6 +1021,99 @@ body.dark-mode .cashier-panel {
     font-weight: 900;
 }
 
+.sales-overview {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.sales-item-row {
+    grid-template-columns: minmax(0, 1.4fr) repeat(6, minmax(0, 1fr)) auto;
+}
+
+.sales-summary-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sales-employee-field-hidden {
+    display: none;
+}
+
+.sales-type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 92px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    border: 1px solid transparent;
+}
+
+.sales-type-badge-sale {
+    background: rgba(16, 185, 129, 0.14);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.sales-type-badge-return {
+    background: rgba(239, 68, 68, 0.14);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+body.dark-mode .sales-type-badge-sale {
+    background: rgba(16, 185, 129, 0.18);
+    color: #6ee7b7;
+}
+
+body.dark-mode .sales-type-badge-return {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.sales-item-pill {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.sales-item-pill-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sales-item-pill-meta {
+    align-self: flex-start;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--text-color);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.sales-stock-pill {
+    background: rgba(124, 58, 237, 0.12);
+}
+
+.sales-positive-total {
+    color: #047857;
+}
+
+.sales-negative-total {
+    color: #b91c1c;
+}
+
+body.dark-mode .sales-positive-total {
+    color: #6ee7b7;
+}
+
+body.dark-mode .sales-negative-total {
+    color: #fca5a5;
+}
+
 .barbers-management-layout,
 .staff-management-layout,
 .loan-management-layout {
@@ -1482,6 +1575,10 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .sales-overview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .barber-payments-overview {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -1563,6 +1660,11 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     }
 
     .cashier-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-overview,
+    .sales-summary-strip {
         grid-template-columns: 1fr;
     }
 
@@ -1721,6 +1823,10 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
         padding: 14px;
     }
 
+    .sales-item-row {
+        grid-template-columns: 1fr;
+    }
+
     .welcome-panel,
     .content-card {
         padding: 18px;
@@ -1819,6 +1925,10 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
 
     .responsive-table .cashier-service-pill {
         width: 100%;
+    }
+
+    .responsive-table .sales-type-badge {
+        min-width: 0;
     }
 }
 
