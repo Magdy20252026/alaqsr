@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (itemSelect && itemSelect.value && Number(priceInput.value || 0) < minPrice) {
-                    priceInput.setCustomValidity("لا يمكن أن يقل السعر عن 50% من السعر المسجل");
+                    priceInput.setCustomValidity("السعر أقل من الحد الأدنى المسموح");
                 } else {
                     priceInput.setCustomValidity("");
                 }

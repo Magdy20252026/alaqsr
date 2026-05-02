@@ -11,6 +11,8 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+const SALES_MIN_PRICE_RATIO = 0.5;
+
 function getSalesInvoiceTypes()
 {
     return [
@@ -107,14 +109,10 @@ function applySalesInventoryAdjustments($conn, $invoiceType, $invoiceItems, $rev
         }
 
         $currentQuantity = $itemRow['quantity_value'] !== null ? (float) $itemRow['quantity_value'] : 0.0;
-        $nextQuantity = $currentQuantity + $delta;
-
-        if ($nextQuantity < -0.00001) {
-            throw new RuntimeException('insufficient_stock');
-        }
+        $nextQuantity = round($currentQuantity + $delta, 2);
 
         if ($nextQuantity < 0) {
-            $nextQuantity = 0;
+            throw new RuntimeException('insufficient_stock');
         }
 
         $updateStmt = $conn->prepare("UPDATE items SET quantity_value = ? WHERE id = ?");
@@ -219,7 +217,7 @@ foreach ($items as $item) {
         'item_name' => $item['item_name'],
         'pricing_type' => $item['pricing_type'],
         'registered_price' => $registeredPrice,
-        'min_price' => $registeredPrice * 0.5,
+        'min_price' => $registeredPrice * SALES_MIN_PRICE_RATIO,
         'available_quantity' => $availableQuantity
     ];
 }
@@ -382,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $registeredPrice = (float) $itemsById[$itemId]['item_price'];
-                $minimumAllowed = $registeredPrice * 0.5;
+                $minimumAllowed = $registeredPrice * SALES_MIN_PRICE_RATIO;
                 $unitPrice = (float) $unitPriceInput;
                 $quantity = (float) $quantityInput;
 
@@ -724,7 +722,7 @@ if ($invoiceIds) {
                                         <?php
                                         $selectedItemId = (int) ($item['item_id'] ?? 0);
                                         $registeredPrice = isset($itemsById[$selectedItemId]) ? (float) $itemsById[$selectedItemId]['item_price'] : 0.0;
-                                        $minimumAllowed = $registeredPrice * 0.5;
+                                        $minimumAllowed = $registeredPrice * SALES_MIN_PRICE_RATIO;
                                         $availableQuantity = isset($itemsById[$selectedItemId]) && $itemsById[$selectedItemId]['quantity_value'] !== null
                                             ? (float) $itemsById[$selectedItemId]['quantity_value']
                                             : null;
