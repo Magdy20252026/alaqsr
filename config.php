@@ -12,8 +12,8 @@ $password = "6Mq8FJU02jepJ";
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $egyptOffset = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P');
-    $conn->exec("SET time_zone = '{$egyptOffset}'");
+    $appTimezoneOffset = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P');
+    $conn->exec('SET time_zone = ' . $conn->quote($appTimezoneOffset));
 } catch (PDOException $e) {
     die("فشل الاتصال بقاعدة البيانات");
 }
