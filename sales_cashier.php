@@ -103,12 +103,16 @@ function applySalesInventoryAdjustments($conn, $invoiceType, $invoiceItems, $rev
             throw new RuntimeException('missing_item');
         }
 
+        if ($itemRow['quantity_value'] === null) {
+            throw new RuntimeException('invalid_stock');
+        }
+
         $delta = $invoiceType === 'sale' ? -$quantity : $quantity;
         if ($reverse) {
             $delta *= -1;
         }
 
-        $currentQuantity = $itemRow['quantity_value'] !== null ? (float) $itemRow['quantity_value'] : 0.0;
+        $currentQuantity = (float) $itemRow['quantity_value'];
         $nextQuantity = round($currentQuantity + $delta, 2);
 
         if ($nextQuantity < 0) {
@@ -322,7 +326,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $errorMessage = $e->getMessage() === 'missing_invoice'
                 ? 'الفاتورة غير موجودة'
-                : 'تعذر حذف الفاتورة';
+                : ($e->getMessage() === 'invalid_stock' ? 'رصيد أحد الأصناف غير صالح للتحديث' : 'تعذر حذف الفاتورة');
         } catch (PDOException $e) {
             if ($conn->inTransaction()) {
                 $conn->rollBack();
@@ -511,6 +515,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $errorMessage = 'الفاتورة غير موجودة';
                     } elseif ($e->getMessage() === 'missing_item') {
                         $errorMessage = 'أحد الأصناف لم يعد موجودًا';
+                    } elseif ($e->getMessage() === 'invalid_stock') {
+                        $errorMessage = 'رصيد أحد الأصناف غير صالح للتحديث';
                     } elseif ($e->getMessage() === 'insufficient_stock') {
                         $errorMessage = 'الكمية المطلوبة أكبر من الرصيد المتاح في الأصناف';
                     } else {
