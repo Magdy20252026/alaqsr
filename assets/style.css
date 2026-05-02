@@ -694,12 +694,14 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
 }
 
 .barbers-form-grid,
-.staff-form-grid {
+.staff-form-grid,
+.loan-form-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .barbers-overview,
-.staff-overview {
+.staff-overview,
+.loans-overview {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
@@ -708,7 +710,8 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
 
 .overview-card,
 .barber-form-card,
-.staff-form-card {
+.staff-form-card,
+.loan-form-card {
     background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(241,245,249,0.78));
     border: 1px solid rgba(148, 163, 184, 0.18);
     border-radius: 24px;
@@ -735,12 +738,14 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
 }
 
 .barbers-management-layout,
-.staff-management-layout {
+.staff-management-layout,
+.loan-management-layout {
     margin-bottom: 24px;
 }
 
 .barber-form-card,
-.staff-form-card {
+.staff-form-card,
+.loan-form-card {
     padding: 22px;
 }
 
@@ -771,8 +776,37 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
 }
 
 .barbers-actions-row,
-.staff-actions-row {
+.staff-actions-row,
+.loan-actions-row {
     justify-content: flex-start;
+}
+
+.loan-page-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.loan-form-grid {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+    margin-bottom: 0;
+}
+
+.loans-table {
+    min-width: 100%;
+}
+
+.amount-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    min-width: 110px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(37, 99, 235, 0.16));
+    border: 1px solid rgba(16, 185, 129, 0.22);
+    color: var(--text-color);
 }
 
 .time-selects {
@@ -919,9 +953,15 @@ body.dark-mode .day-badge {
 
 body.dark-mode .overview-card,
 body.dark-mode .barber-form-card,
-body.dark-mode .staff-form-card {
+body.dark-mode .staff-form-card,
+body.dark-mode .loan-form-card {
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.76));
     border-color: rgba(148, 163, 184, 0.14);
+}
+
+body.dark-mode .amount-badge {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.20), rgba(59, 130, 246, 0.18));
+    border-color: rgba(245, 158, 11, 0.24);
 }
 
 body.dark-mode .off-days-panel {
@@ -1054,12 +1094,14 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     }
 
     .barbers-form-grid,
-    .staff-form-grid {
+    .staff-form-grid,
+    .loan-form-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .barbers-overview,
     .staff-overview,
+    .loans-overview,
     .off-days-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -1128,7 +1170,8 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     }
 
     .barbers-overview,
-    .staff-overview {
+    .staff-overview,
+    .loans-overview {
         grid-template-columns: 1fr;
     }
 }
@@ -1213,7 +1256,8 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     }
 
     .barbers-form-grid,
-    .staff-form-grid {
+    .staff-form-grid,
+    .loan-form-grid {
         grid-template-columns: 1fr;
     }
 

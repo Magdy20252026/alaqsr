@@ -1,5 +1,6 @@
 <?php
 const APP_TIMEZONE = 'Africa/Cairo';
+const APP_MANAGER_ROLE = 'مدير';
 
 date_default_timezone_set(APP_TIMEZONE);
 define('APP_TIMEZONE_OFFSET', (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P'));
@@ -53,13 +54,37 @@ function getUserPermissions($conn, $userId)
     return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
 
+function getTextLength($value)
+{
+    if (function_exists('mb_strlen')) {
+        return mb_strlen($value);
+    }
+
+    return strlen($value);
+}
+
+function formatDateTimeValue($value)
+{
+    if (!is_string($value) || trim($value) === '') {
+        return '—';
+    }
+
+    $timestamp = strtotime($value);
+
+    if ($timestamp === false) {
+        return '—';
+    }
+
+    return date('Y-m-d h:i A', $timestamp);
+}
+
 function canAccess($pageKey)
 {
     if (!isset($_SESSION['role'])) {
         return false;
     }
 
-    if ($_SESSION['role'] === 'مدير') {
+    if ($_SESSION['role'] === APP_MANAGER_ROLE) {
         return true;
     }
 
