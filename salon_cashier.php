@@ -30,18 +30,13 @@ function formatCashierAmount($value)
 
 function ensureSalonInvoiceColumnExists($conn, $columnName)
 {
-    $supportedColumns = [
-        'customer_name' => [
-            'definition' => "VARCHAR(255) NOT NULL DEFAULT ''",
-            'position' => 'barber_name'
-        ],
-        'customer_phone' => [
-            'definition' => "VARCHAR(50) NOT NULL DEFAULT ''",
-            'position' => 'customer_name'
-        ]
-    ];
+    $alterQuery = null;
 
-    if (!isset($supportedColumns[$columnName])) {
+    if ($columnName === 'customer_name') {
+        $alterQuery = "ALTER TABLE salon_invoices ADD COLUMN customer_name VARCHAR(255) NOT NULL DEFAULT '' AFTER barber_name";
+    } elseif ($columnName === 'customer_phone') {
+        $alterQuery = "ALTER TABLE salon_invoices ADD COLUMN customer_phone VARCHAR(50) NOT NULL DEFAULT '' AFTER customer_name";
+    } else {
         throw new InvalidArgumentException('Unsupported salon invoice column');
     }
 
@@ -60,10 +55,7 @@ function ensureSalonInvoiceColumnExists($conn, $columnName)
     }
 
     try {
-        $columnConfig = $supportedColumns[$columnName];
-        $conn->exec(
-            "ALTER TABLE salon_invoices ADD COLUMN `{$columnName}` {$columnConfig['definition']} AFTER `{$columnConfig['position']}`"
-        );
+        $conn->exec($alterQuery);
     } catch (PDOException $migrationException) {
         $duplicateColumn = isset($migrationException->errorInfo[1])
             && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
