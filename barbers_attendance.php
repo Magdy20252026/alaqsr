@@ -59,8 +59,9 @@ function parseAttendanceDateTime($dateValue, $timeValue)
     }
 
     $dateTime = DateTimeImmutable::createFromFormat('Y-m-d h:iA', $dateValue . ' ' . $normalizedTime);
+    $dateTimeErrors = DateTimeImmutable::getLastErrors();
 
-    if (!$dateTime) {
+    if (!$dateTime || ($dateTimeErrors['warning_count'] ?? 0) > 0 || ($dateTimeErrors['error_count'] ?? 0) > 0) {
         return null;
     }
 
@@ -736,7 +737,7 @@ foreach ($attendanceRecords as $recordSummary) {
                             await stopCameraScanner();
                             if (typeof scanForm.requestSubmit === 'function') {
                                 scanForm.requestSubmit();
-                            } else {
+                            } else if (typeof scanForm.reportValidity !== 'function' || scanForm.reportValidity()) {
                                 scanForm.submit();
                             }
                             return;
