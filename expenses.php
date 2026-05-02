@@ -14,18 +14,6 @@ if (empty($_SESSION['csrf_token'])) {
 $isManager = isset($_SESSION['role']) && $_SESSION['role'] === APP_MANAGER_ROLE;
 $currentUserId = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
 
-function expensesColumnExists(PDO $conn, $columnName)
-{
-    $stmt = $conn->prepare(
-        "SELECT COUNT(*)
-         FROM information_schema.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'expenses' AND COLUMN_NAME = ?"
-    );
-    $stmt->execute([$columnName]);
-
-    return (int) $stmt->fetchColumn() > 0;
-}
-
 try {
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS expenses (
@@ -39,26 +27,6 @@ try {
             CONSTRAINT fk_expenses_recorded_by FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
-
-    if (!expensesColumnExists($conn, 'description')) {
-        $conn->exec("ALTER TABLE expenses ADD COLUMN description VARCHAR(500) NOT NULL DEFAULT '' AFTER id");
-    }
-
-    if (!expensesColumnExists($conn, 'amount')) {
-        $conn->exec("ALTER TABLE expenses ADD COLUMN amount DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER description");
-    }
-
-    if (!expensesColumnExists($conn, 'recorded_by')) {
-        $conn->exec("ALTER TABLE expenses ADD COLUMN recorded_by INT UNSIGNED DEFAULT NULL AFTER amount");
-    }
-
-    if (!expensesColumnExists($conn, 'created_at')) {
-        $conn->exec("ALTER TABLE expenses ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER recorded_by");
-    }
-
-    if (!expensesColumnExists($conn, 'updated_at')) {
-        $conn->exec("ALTER TABLE expenses ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER created_at");
-    }
 } catch (PDOException $e) {
     http_response_code(500);
     die("تعذر تجهيز صفحة المصروفات");
@@ -237,7 +205,7 @@ if ($expenses) {
 
                             <div class="field-group horizontal-field">
                                 <label>البيان</label>
-                                <textarea name="description" rows="3" maxlength="500" required><?php echo htmlspecialchars($formData['description']); ?></textarea>
+                                <textarea name="description" rows="3" required><?php echo htmlspecialchars($formData['description']); ?></textarea>
                             </div>
 
                             <div class="field-group horizontal-field">
