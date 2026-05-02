@@ -29,7 +29,7 @@
         <?php if (canAccess('items')) { ?><a href="items.php" class="menu-btn items-btn <?php echo $currentPage === 'items.php' ? 'active-btn' : ''; ?>">📦 الأصناف</a><?php } ?>
         <?php if (canAccess('sales_cashier')) { ?><a href="sales_cashier.php" class="menu-btn sales-btn <?php echo $currentPage === 'sales_cashier.php' ? 'active-btn' : ''; ?>">🛒 كاشير المبيعات</a><?php } ?>
         <?php if (canAccess('expenses')) { ?><a href="expenses.php" class="menu-btn expenses-btn <?php echo $currentPage === 'expenses.php' ? 'active-btn' : ''; ?>">🧾 مصروفات</a><?php } ?>
-        <?php if (canAccess('statistics')) { ?><a href="#" class="menu-btn stats-btn">📊 احصائيات</a><?php } ?>
+        <?php if (canAccess('statistics')) { ?><a href="statistics.php" class="menu-btn stats-btn <?php echo $currentPage === 'statistics.php' ? 'active-btn' : ''; ?>">📊 احصائيات</a><?php } ?>
         <?php if (canAccess('daily_closing')) { ?><a href="#" class="menu-btn daily-btn">📘 تقفيل يومي</a><?php } ?>
         <?php if (canAccess('monthly_closing')) { ?><a href="#" class="menu-btn monthly-btn">📗 تقفيل شهري</a><?php } ?>
         <?php if (canAccess('site_settings')) { ?><a href="site_settings.php" class="menu-btn settings-btn <?php echo $currentPage === 'site_settings.php' ? 'active-btn' : ''; ?>">⚙️ إعدادت الموقع</a><?php } ?>
