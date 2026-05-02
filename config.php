@@ -12,10 +12,15 @@ $password = "6Mq8FJU02jepJ";
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $appTimezoneOffset = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P');
-    $conn->exec('SET time_zone = ' . $conn->quote($appTimezoneOffset));
+
+    try {
+        $conn->exec('SET time_zone = ' . $conn->quote(APP_TIMEZONE));
+    } catch (PDOException $timezoneException) {
+        $appTimezoneOffset = (new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE)))->format('P');
+        $conn->exec('SET time_zone = ' . $conn->quote($appTimezoneOffset));
+    }
 } catch (PDOException $e) {
-    die("فشل الاتصال بقاعدة البيانات");
+    die("فشل الاتصال بقاعدة البيانات أو ضبط التوقيت");
 }
 
 function isLoggedIn()
