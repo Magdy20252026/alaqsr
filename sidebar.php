@@ -20,7 +20,7 @@
         <?php if (canAccess('barbers_loans')) { ?><a href="#" class="menu-btn loans-btn">💵 سلف الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_deductions')) { ?><a href="#" class="menu-btn deductions-btn">📉 خصومات الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_payments')) { ?><a href="#" class="menu-btn payments-btn">💰 قبض حلاقين</a><?php } ?>
-        <?php if (canAccess('employees')) { ?><a href="#" class="menu-btn employees-btn">🧑‍💼 الموظفين</a><?php } ?>
+        <?php if (canAccess('employees')) { ?><a href="employees.php" class="menu-btn employees-btn <?php echo $currentPage === 'employees.php' ? 'active-btn' : ''; ?>">🧑‍💼 الموظفين</a><?php } ?>
         <?php if (canAccess('employees_attendance')) { ?><a href="#" class="menu-btn attendance2-btn">🗓️ حضور الموظفين</a><?php } ?>
         <?php if (canAccess('employees_loans')) { ?><a href="#" class="menu-btn loans2-btn">💸 سلف الموظفين</a><?php } ?>
         <?php if (canAccess('employees_deductions')) { ?><a href="#" class="menu-btn deductions2-btn">➖ خصومات الموظفين</a><?php } ?>
