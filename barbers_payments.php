@@ -11,6 +11,13 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+const BARBER_PAYMENT_AMOUNT_MAX_LENGTH = 20;
+
+function getBarberPaymentBarberId($value)
+{
+    return ctype_digit((string) $value) ? (int) $value : 0;
+}
+
 function isBarberPaymentNumericValue($value)
 {
     return is_string($value) && preg_match('/^\d+(?:\.\d{1,2})?$/', $value) === 1;
@@ -225,12 +232,18 @@ try {
 
 $settings = getSiteSettings($conn);
 $currentMonthStart = date('Y-m-01');
-$currentMonthDate = DateTimeImmutable::createFromFormat('Y-m-d', $currentMonthStart) ?: new DateTimeImmutable(date('Y-m-01'));
+$currentMonthDate = DateTimeImmutable::createFromFormat('Y-m-d', $currentMonthStart);
+
+if (!$currentMonthDate || $currentMonthDate->format('Y-m-d') !== $currentMonthStart) {
+    http_response_code(500);
+    die("تعذر تجهيز صفحة قبض الحلاقين");
+}
+
 $nextMonthStart = $currentMonthDate->modify('+1 month')->format('Y-m-d');
 $currentMonthLabel = getBarberPaymentMonthLabel($currentMonthStart);
 $errorMessage = '';
 $successMessage = trim((string) ($_GET['success'] ?? ''));
-$selectedBarberId = ctype_digit((string) ($_GET['barber_id'] ?? '')) ? (int) $_GET['barber_id'] : 0;
+$selectedBarberId = getBarberPaymentBarberId($_GET['barber_id'] ?? '');
 $paymentAmountValue = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -241,14 +254,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("الطلب غير صالح");
     }
 
-    $selectedBarberId = ctype_digit((string) ($_POST['barber_id'] ?? '')) ? (int) $_POST['barber_id'] : 0;
+    $selectedBarberId = getBarberPaymentBarberId($_POST['barber_id'] ?? '');
     $paymentAmountValue = trim((string) ($_POST['payment_amount'] ?? ''));
 
     if ($selectedBarberId <= 0) {
         $errorMessage = 'اختر الحلاق أولاً';
     } elseif ($paymentAmountValue === '') {
         $errorMessage = 'اكتب مبلغ قبض الحلاق';
-    } elseif (getTextLength($paymentAmountValue) > 20 || !isBarberPaymentNumericValue($paymentAmountValue)) {
+    } elseif (getTextLength($paymentAmountValue) > BARBER_PAYMENT_AMOUNT_MAX_LENGTH || !isBarberPaymentNumericValue($paymentAmountValue)) {
         $errorMessage = 'مبلغ القبض يجب أن يكون رقمًا صحيحًا أو عشريًا';
     } else {
         $paymentAmount = (float) $paymentAmountValue;
