@@ -105,6 +105,21 @@ function getStatusTone($status)
     return 'info';
 }
 
+function canResetEmptyAttendanceRecord($record)
+{
+    return is_array($record) && empty($record['check_in_at']) && empty($record['check_out_at']);
+}
+
+function needsOffDayRefresh($record)
+{
+    return canResetEmptyAttendanceRecord($record) && (((int) $record['is_off_day']) !== 1 || $record['day_status'] !== 'إجازة');
+}
+
+function needsAbsenceRefresh($record)
+{
+    return canResetEmptyAttendanceRecord($record) && (((int) $record['is_off_day']) === 1 || $record['day_status'] === 'إجازة');
+}
+
 function syncBarbersAttendanceArchive($conn, $barbers, $weekDays, $todayDate)
 {
     $selectStmt = $conn->prepare(
@@ -177,7 +192,7 @@ function syncBarbersAttendanceArchive($conn, $barbers, $weekDays, $todayDate)
                         'إجازة',
                         1
                     ]);
-                } elseif (empty($existingRow['check_in_at']) && empty($existingRow['check_out_at']) && (((int) $existingRow['is_off_day']) !== 1 || $existingRow['day_status'] !== 'إجازة')) {
+                } elseif (needsOffDayRefresh($existingRow)) {
                     $updateStmt->execute([
                         $barber['attendance_time'],
                         $barber['departure_time'],
@@ -199,7 +214,7 @@ function syncBarbersAttendanceArchive($conn, $barbers, $weekDays, $todayDate)
                     'غياب',
                     0
                 ]);
-            } elseif ($recordDate < $todayDate && $existingRow !== null && empty($existingRow['check_in_at']) && empty($existingRow['check_out_at']) && (((int) $existingRow['is_off_day']) === 1 || $existingRow['day_status'] === 'إجازة')) {
+            } elseif ($recordDate < $todayDate && needsAbsenceRefresh($existingRow)) {
                 $updateStmt->execute([
                     $barber['attendance_time'],
                     $barber['departure_time'],
@@ -727,7 +742,11 @@ foreach ($attendanceRecords as $recordSummary) {
                             barcodeInput.value = rawValue;
                             cameraStatus.textContent = 'تمت القراءة';
                             await stopCameraScanner();
-                            scanForm.requestSubmit();
+                            if (typeof scanForm.requestSubmit === 'function') {
+                                scanForm.requestSubmit();
+                            } else {
+                                scanForm.submit();
+                            }
                             return;
                         }
                     }
@@ -744,8 +763,7 @@ foreach ($attendanceRecords as $recordSummary) {
                 }
 
                 if (!('BarcodeDetector' in window)) {
-                    cameraStatus.textContent = 'المتصفح لا يدعم قراءة الباركود بالكاميرا';
-                    cameraSheet.hidden = false;
+                    window.alert('المتصفح لا يدعم قراءة الباركود بالكاميرا');
                     return;
                 }
 
@@ -753,6 +771,12 @@ foreach ($attendanceRecords as $recordSummary) {
                     detector = new BarcodeDetector({
                         formats: ['code_128', 'code_39', 'ean_13', 'ean_8', 'upc_a', 'upc_e', 'qr_code']
                     });
+                } catch (error) {
+                    window.alert('المتصفح لا يدعم قراءة الباركود بالكاميرا');
+                    return;
+                }
+
+                try {
                     cameraStatus.textContent = 'وجّه الكاميرا نحو الباركود';
                     cameraSheet.hidden = false;
                     cameraStream = await navigator.mediaDevices.getUserMedia({
