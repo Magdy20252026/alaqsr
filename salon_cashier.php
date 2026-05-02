@@ -11,6 +11,8 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+const MYSQL_ERROR_DUPLICATE_COLUMN = 1060;
+
 function isCashierNumericValue($value)
 {
     return is_string($value) && preg_match('/^\d+(?:\.\d{1,2})?$/', $value) === 1;
@@ -18,7 +20,7 @@ function isCashierNumericValue($value)
 
 function isCashierPhoneValue($value)
 {
-    return is_string($value) && preg_match('/^[\p{N}\+\-\s\(\)]+$/u', $value) === 1;
+    return is_string($value) && preg_match('/^(?=.*\p{N})[\p{N}\+\-\s\(\)]+$/u', $value) === 1;
 }
 
 function formatCashierAmount($value)
@@ -26,8 +28,23 @@ function formatCashierAmount($value)
     return number_format((float) $value, 2, '.', '');
 }
 
-function ensureSalonInvoiceColumn($conn, $columnName, $definition, $position)
+function ensureSalonInvoiceColumnExists($conn, $columnName)
 {
+    $supportedColumns = [
+        'customer_name' => [
+            'definition' => "VARCHAR(255) NOT NULL DEFAULT ''",
+            'position' => 'barber_name'
+        ],
+        'customer_phone' => [
+            'definition' => "VARCHAR(50) NOT NULL DEFAULT ''",
+            'position' => 'customer_name'
+        ]
+    ];
+
+    if (!isset($supportedColumns[$columnName])) {
+        throw new InvalidArgumentException('Unsupported salon invoice column');
+    }
+
     $columnStmt = $conn->prepare(
         "SELECT 1
          FROM INFORMATION_SCHEMA.COLUMNS
@@ -43,7 +60,10 @@ function ensureSalonInvoiceColumn($conn, $columnName, $definition, $position)
     }
 
     try {
-        $conn->exec("ALTER TABLE salon_invoices ADD COLUMN {$columnName} {$definition} AFTER {$position}");
+        $columnConfig = $supportedColumns[$columnName];
+        $conn->exec(
+            "ALTER TABLE salon_invoices ADD COLUMN `{$columnName}` {$columnConfig['definition']} AFTER `{$columnConfig['position']}`"
+        );
     } catch (PDOException $migrationException) {
         $duplicateColumn = isset($migrationException->errorInfo[1])
             && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
@@ -140,8 +160,8 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    ensureSalonInvoiceColumn($conn, 'customer_name', "VARCHAR(255) NOT NULL DEFAULT ''", 'barber_name');
-    ensureSalonInvoiceColumn($conn, 'customer_phone', "VARCHAR(50) NOT NULL DEFAULT ''", 'customer_name');
+    ensureSalonInvoiceColumnExists($conn, 'customer_name');
+    ensureSalonInvoiceColumnExists($conn, 'customer_phone');
 
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS salon_invoice_items (

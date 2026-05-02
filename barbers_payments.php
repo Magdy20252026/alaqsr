@@ -11,6 +11,8 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+const MYSQL_ERROR_DUPLICATE_COLUMN = 1060;
+
 const BARBER_PAYMENT_AMOUNT_MAX_LENGTH = 20;
 
 function getBarberPaymentBarberId($value)
@@ -28,8 +30,23 @@ function formatBarberPaymentAmount($value)
     return number_format((float) $value, 2, '.', '');
 }
 
-function ensureBarberPaymentSalonInvoiceColumn($conn, $columnName, $definition, $position)
+function ensureSalonInvoiceColumnExists($conn, $columnName)
 {
+    $supportedColumns = [
+        'customer_name' => [
+            'definition' => "VARCHAR(255) NOT NULL DEFAULT ''",
+            'position' => 'barber_name'
+        ],
+        'customer_phone' => [
+            'definition' => "VARCHAR(50) NOT NULL DEFAULT ''",
+            'position' => 'customer_name'
+        ]
+    ];
+
+    if (!isset($supportedColumns[$columnName])) {
+        throw new InvalidArgumentException('Unsupported salon invoice column');
+    }
+
     $columnStmt = $conn->prepare(
         "SELECT 1
          FROM INFORMATION_SCHEMA.COLUMNS
@@ -45,7 +62,10 @@ function ensureBarberPaymentSalonInvoiceColumn($conn, $columnName, $definition, 
     }
 
     try {
-        $conn->exec("ALTER TABLE salon_invoices ADD COLUMN {$columnName} {$definition} AFTER {$position}");
+        $columnConfig = $supportedColumns[$columnName];
+        $conn->exec(
+            "ALTER TABLE salon_invoices ADD COLUMN `{$columnName}` {$columnConfig['definition']} AFTER `{$columnConfig['position']}`"
+        );
     } catch (PDOException $migrationException) {
         $duplicateColumn = isset($migrationException->errorInfo[1])
             && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
@@ -234,8 +254,8 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    ensureBarberPaymentSalonInvoiceColumn($conn, 'customer_name', "VARCHAR(255) NOT NULL DEFAULT ''", 'barber_name');
-    ensureBarberPaymentSalonInvoiceColumn($conn, 'customer_phone', "VARCHAR(50) NOT NULL DEFAULT ''", 'customer_name');
+    ensureSalonInvoiceColumnExists($conn, 'customer_name');
+    ensureSalonInvoiceColumnExists($conn, 'customer_phone');
 
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS barbers_payments (
