@@ -193,6 +193,8 @@ try {
             employee_name VARCHAR(255) NOT NULL,
             barber_id INT UNSIGNED NOT NULL,
             barber_name VARCHAR(255) NOT NULL,
+            customer_name VARCHAR(255) NOT NULL DEFAULT '',
+            customer_phone VARCHAR(50) NOT NULL DEFAULT '',
             barber_commission_percent DECIMAL(5,2) NOT NULL DEFAULT 0,
             total_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
             barber_share_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
