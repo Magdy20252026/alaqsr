@@ -217,7 +217,14 @@ function syncEmployeesAttendanceArchive($conn, $employees, $weekDays, $todayDate
         $createdAt = isset($employee['created_at']) ? (string) $employee['created_at'] : '';
         $createdDate = extractAttendanceCreatedDate($createdAt, $todayDate);
 
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $createdDate) || $createdDate > $todayDate) {
+        try {
+            $createdDateObject = new DateTimeImmutable($createdDate);
+            $todayDateObject = new DateTimeImmutable($todayDate);
+
+            if ($createdDateObject->format('Y-m-d') !== $createdDate || $createdDateObject > $todayDateObject) {
+                $createdDate = $todayDate;
+            }
+        } catch (Exception $exception) {
             $createdDate = $todayDate;
         }
 
