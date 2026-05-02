@@ -118,7 +118,39 @@ function needsOffDayRefresh($record)
 
 function needsAbsenceRefresh($record)
 {
-    return canResetEmptyAttendanceRecord($record) && (((int) $record['is_off_day']) === 1 || $record['day_status'] === 'إجازة');
+    if (!is_array($record)) {
+        return false;
+    }
+
+    if (((int) ($record['is_off_day'] ?? 0)) === 1 || ($record['day_status'] ?? '') === 'إجازة') {
+        return false;
+    }
+
+    return empty($record['check_in_at']) || empty($record['check_out_at']);
+}
+
+function getAbsenceRefreshValues($record)
+{
+    $attendanceStatus = trim((string) ($record['attendance_status'] ?? ''));
+    $departureStatus = trim((string) ($record['departure_status'] ?? ''));
+    $hasCheckIn = !empty($record['check_in_at']);
+    $hasCheckOut = !empty($record['check_out_at']);
+
+    if (!$hasCheckIn && !$hasCheckOut) {
+        return [
+            'attendance_status' => 'غياب',
+            'departure_status' => '',
+            'day_status' => 'غياب',
+            'is_off_day' => 0
+        ];
+    }
+
+    return [
+        'attendance_status' => $hasCheckIn && $attendanceStatus !== '' ? $attendanceStatus : 'غياب',
+        'departure_status' => $hasCheckOut && $departureStatus !== '' ? $departureStatus : 'غياب',
+        'day_status' => 'غياب',
+        'is_off_day' => 0
+    ];
 }
 
 function extractAttendanceCreatedDate($createdAt, $fallbackDate)
@@ -229,13 +261,14 @@ function syncBarbersAttendanceArchive($conn, $barbers, $weekDays, $todayDate)
                     0
                 ]);
             } elseif ($recordDate < $todayDate && needsAbsenceRefresh($existingRow)) {
+                $absenceValues = getAbsenceRefreshValues($existingRow);
                 $updateStmt->execute([
                     $barber['attendance_time'],
                     $barber['departure_time'],
-                    'غياب',
-                    '',
-                    'غياب',
-                    0,
+                    $absenceValues['attendance_status'],
+                    $absenceValues['departure_status'],
+                    $absenceValues['day_status'],
+                    $absenceValues['is_off_day'],
                     (int) $existingRow['id']
                 ]);
             }
