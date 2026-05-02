@@ -2,6 +2,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const themeToggle = document.getElementById("themeToggle");
     const body = document.body;
 
+    function safeJsonParse(element, fallbackValue) {
+        if (!element) {
+            return fallbackValue;
+        }
+
+        try {
+            return JSON.parse(element.textContent || "");
+        } catch (error) {
+            console.error("JSON parse error", error);
+            return fallbackValue;
+        }
+    }
+
     if (localStorage.getItem("theme") === "dark") {
         body.classList.add("dark-mode");
         if (themeToggle) {
@@ -85,8 +98,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const barbersDataElement = document.getElementById("cashierBarbersData");
 
     if (cashierItems && cashierTemplate && servicesDataElement) {
-        const servicesData = JSON.parse(servicesDataElement.textContent || "{}");
-        const barbersData = barbersDataElement ? JSON.parse(barbersDataElement.textContent || "{}") : {};
+        const servicesData = safeJsonParse(servicesDataElement, {});
+        const barbersData = safeJsonParse(barbersDataElement, {});
 
         function formatMoney(value) {
             return Number(value || 0).toFixed(2) + " ج";
@@ -238,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const salesDataElement = document.getElementById("salesItemsData");
 
     if (salesItems && salesTemplate && salesDataElement) {
-        const salesData = JSON.parse(salesDataElement.textContent || "{}");
+        const salesData = safeJsonParse(salesDataElement, {});
 
         function formatSalesMoney(value) {
             return Number(value || 0).toFixed(2) + " ج";

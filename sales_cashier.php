@@ -251,7 +251,10 @@ if (isset($_GET['edit'])) {
     $editInvoice = $invoiceStmt->fetch(PDO::FETCH_ASSOC);
 
     if ($editInvoice) {
-        $filterDate = date('Y-m-d', strtotime($editInvoice['created_at']));
+        $createdTimestamp = strtotime((string) $editInvoice['created_at']);
+        if ($createdTimestamp !== false) {
+            $filterDate = date('Y-m-d', $createdTimestamp);
+        }
         $editItems = fetchSalesInvoiceItems($conn, $invoiceId);
         $preparedItems = [];
 
