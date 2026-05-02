@@ -30,10 +30,12 @@
         <?php if (canAccess('sales_cashier')) { ?><a href="sales_cashier.php" class="menu-btn sales-btn <?php echo $currentPage === 'sales_cashier.php' ? 'active-btn' : ''; ?>">🛒 كاشير المبيعات</a><?php } ?>
         <?php if (canAccess('expenses')) { ?><a href="expenses.php" class="menu-btn expenses-btn <?php echo $currentPage === 'expenses.php' ? 'active-btn' : ''; ?>">🧾 مصروفات</a><?php } ?>
         <?php if (canAccess('statistics')) { ?><a href="statistics.php" class="menu-btn stats-btn <?php echo $currentPage === 'statistics.php' ? 'active-btn' : ''; ?>">📊 إحصائيات</a><?php } ?>
-        <?php if (canAccess('daily_closing')) { ?><a href="#" class="menu-btn daily-btn">📘 تقفيل يومي</a><?php } ?>
-        <?php if (canAccess('monthly_closing')) { ?><a href="#" class="menu-btn monthly-btn">📗 تقفيل شهري</a><?php } ?>
+        <?php if (canAccess('appointments')) { ?><a href="bookings.php" class="menu-btn booking-btn <?php echo $currentPage === 'bookings.php' ? 'active-btn' : ''; ?>">📅 الحجوزات</a><?php } ?>
         <?php if (canAccess('site_settings')) { ?><a href="site_settings.php" class="menu-btn settings-btn <?php echo $currentPage === 'site_settings.php' ? 'active-btn' : ''; ?>">⚙️ إعدادت الموقع</a><?php } ?>
 
         <a href="logout.php" class="menu-btn logout-btn">🚪 تسجيل خروج</a>
     </nav>
 </aside>
+<?php if ((($_SESSION['role'] ?? '') === APP_MANAGER_ROLE) && canAccess('appointments')) { ?>
+<script type="application/json" id="bookingAlertsData"><?php echo json_encode(['url' => 'booking_notifications.php'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
+<?php } ?>
