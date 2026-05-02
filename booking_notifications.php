@@ -49,6 +49,17 @@ $now = new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE));
 $reminderDeadline = $now->modify('+15 minutes');
 $notifications = [];
 
+function formatNotificationAppointmentTime($value)
+{
+    $date = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) $value, new DateTimeZone(APP_TIMEZONE));
+
+    if (!$date) {
+        return '—';
+    }
+
+    return $date->format('H:i');
+}
+
 try {
     $conn->beginTransaction();
 
@@ -100,7 +111,7 @@ try {
                 'id' => (int) $appointment['id'],
                 'type' => 'reminder',
                 'title' => 'موعد خلال 15 دقيقة',
-                'body' => $appointment['customer_name'] . ' مع ' . $appointment['barber_name'] . ' الساعة ' . date('h:i A', strtotime($appointment['appointment_at']))
+                'body' => $appointment['customer_name'] . ' مع ' . $appointment['barber_name'] . ' الساعة ' . formatNotificationAppointmentTime($appointment['appointment_at'])
             ];
         }
     }

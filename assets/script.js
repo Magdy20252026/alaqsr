@@ -444,8 +444,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const bookingTimeInput = document.querySelector("[data-booking-time-input]");
 
     if (bookingTimeInput) {
-        const now = new Date();
-        const minDate = new Date(now.getTime() - 5 * 60000);
+        const bookingNow = new Date();
+        const minDate = new Date(bookingNow.getTime());
         const minHours = String(minDate.getHours()).padStart(2, "0");
         const minMinutes = String(minDate.getMinutes()).padStart(2, "0");
         bookingTimeInput.min = minHours + ":" + minMinutes;

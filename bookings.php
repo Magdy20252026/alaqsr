@@ -48,6 +48,21 @@ function getDefaultAppointmentTime()
     return $candidate->format('H:i');
 }
 
+function formatAppointmentTimeLabel($value)
+{
+    $date = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', (string) $value, new DateTimeZone(APP_TIMEZONE));
+
+    if (!$date) {
+        $date = DateTimeImmutable::createFromFormat('Y-m-d H:i', (string) $value, new DateTimeZone(APP_TIMEZONE));
+    }
+
+    if (!$date) {
+        return '—';
+    }
+
+    return $date->format('H:i');
+}
+
 function getAppointmentMessage($key)
 {
     $messages = [
@@ -189,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$appointmentAt) {
             $errorMessage = 'وقت الموعد غير صالح';
-        } elseif ($appointmentAt < $now->modify('-5 minutes')) {
+        } elseif ($appointmentAt < $now) {
             $errorMessage = 'وقت الموعد يجب أن يكون الآن أو لاحقًا';
         } else {
             try {
@@ -444,7 +459,7 @@ $appointments = $appointmentsStmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?php foreach ($appointments as $appointment) { ?>
                                             <tr>
                                                 <td data-label="#"><?php echo (int) $appointment['id']; ?></td>
-                                                <td data-label="🕒 الموعد"><?php echo date('h:i A', strtotime($appointment['appointment_at'])); ?></td>
+                                                <td data-label="🕒 الموعد"><?php echo htmlspecialchars(formatAppointmentTimeLabel($appointment['appointment_at'])); ?></td>
                                                 <td data-label="👤 العميل"><?php echo htmlspecialchars($appointment['customer_name']); ?></td>
                                                 <td data-label="📞 الهاتف"><?php echo htmlspecialchars($appointment['customer_phone']); ?></td>
                                                 <td data-label="💈 الحلاق"><?php echo htmlspecialchars($appointment['barber_name']); ?></td>
