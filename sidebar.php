@@ -24,7 +24,7 @@
         <?php if (canAccess('employees_attendance')) { ?><a href="employees_attendance.php" class="menu-btn attendance2-btn <?php echo $currentPage === 'employees_attendance.php' ? 'active-btn' : ''; ?>">🗓️ حضور الموظفين</a><?php } ?>
         <?php if (canAccess('employees_loans')) { ?><a href="employees_loans.php" class="menu-btn loans2-btn <?php echo $currentPage === 'employees_loans.php' ? 'active-btn' : ''; ?>">💸 سلف الموظفين</a><?php } ?>
         <?php if (canAccess('employees_deductions')) { ?><a href="employees_deductions.php" class="menu-btn deductions2-btn <?php echo $currentPage === 'employees_deductions.php' ? 'active-btn' : ''; ?>">➖ خصومات الموظفين</a><?php } ?>
-        <?php if (canAccess('employees_salaries')) { ?><a href="#" class="menu-btn salaries-btn">💳 قبض رواتب الموظفين</a><?php } ?>
+        <?php if (canAccess('employees_salaries')) { ?><a href="employees_salaries.php" class="menu-btn salaries-btn <?php echo $currentPage === 'employees_salaries.php' ? 'active-btn' : ''; ?>">💳 قبض رواتب الموظفين</a><?php } ?>
         <?php if (canAccess('salon_cashier')) { ?><a href="salon_cashier.php" class="menu-btn cashier-btn <?php echo $currentPage === 'salon_cashier.php' ? 'active-btn' : ''; ?>">🏦 كاشير الصالون</a><?php } ?>
         <?php if (canAccess('items')) { ?><a href="#" class="menu-btn items-btn">📦 الأصناف</a><?php } ?>
         <?php if (canAccess('sales_cashier')) { ?><a href="#" class="menu-btn sales-btn">🛒 كاشير المبيعات</a><?php } ?>
