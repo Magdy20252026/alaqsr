@@ -210,7 +210,7 @@ $currentMonthDate = DateTimeImmutable::createFromFormat('Y-m-d', $currentMonthSt
 
 if (!$currentMonthDate || $currentMonthDate->format('Y-m-d') !== $currentMonthStart) {
     http_response_code(500);
-    die("تعذر تجهيز صفحة قبض رواتب الموظفين");
+    die("تعذر تحليل تاريخ الشهر الحالي");
 }
 
 $nextMonthStart = $currentMonthDate->modify('+1 month')->format('Y-m-d');
