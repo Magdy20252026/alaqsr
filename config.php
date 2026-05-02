@@ -54,6 +54,30 @@ function getUserPermissions($conn, $userId)
     return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
 
+function getTextLength($value)
+{
+    if (function_exists('mb_strlen')) {
+        return mb_strlen($value);
+    }
+
+    return strlen($value);
+}
+
+function formatDateTimeValue($value)
+{
+    if (!is_string($value) || trim($value) === '') {
+        return '—';
+    }
+
+    $timestamp = strtotime($value);
+
+    if ($timestamp === false) {
+        return '—';
+    }
+
+    return date('Y-m-d h:i A', $timestamp);
+}
+
 function canAccess($pageKey)
 {
     if (!isset($_SESSION['role'])) {

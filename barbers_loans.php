@@ -11,30 +11,6 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-function getTextLength($value)
-{
-    if (function_exists('mb_strlen')) {
-        return mb_strlen($value);
-    }
-
-    return strlen($value);
-}
-
-function formatLoanDateTime($value)
-{
-    if (!is_string($value) || trim($value) === '') {
-        return '—';
-    }
-
-    $timestamp = strtotime($value);
-
-    if ($timestamp === false) {
-        return '—';
-    }
-
-    return date('Y-m-d h:i A', $timestamp);
-}
-
 $isManager = isset($_SESSION['role']) && $_SESSION['role'] === APP_MANAGER_ROLE;
 
 try {
@@ -284,7 +260,7 @@ $averageAmount = $loansCount > 0 ? $totalAmount / $loansCount : 0;
                                         <td data-label="#"><?php echo $loan['id']; ?></td>
                                         <td data-label="💈 الحلاق"><?php echo htmlspecialchars($loan['barber_name']); ?></td>
                                         <td data-label="💵 المبلغ"><span class="amount-badge"><?php echo number_format((float) $loan['amount'], 2); ?></span></td>
-                                        <td data-label="🕒 تاريخ التسجيل"><?php echo htmlspecialchars(formatLoanDateTime($loan['created_at'])); ?></td>
+                                        <td data-label="🕒 تاريخ التسجيل"><?php echo htmlspecialchars(formatDateTimeValue($loan['created_at'])); ?></td>
                                         <?php if ($isManager) { ?>
                                             <td class="action-cell" data-label="⚙️ الإجراءات">
                                                 <a href="barbers_loans.php?edit=<?php echo $loan['id']; ?>" class="btn btn-warning">✏️ تعديل</a>
