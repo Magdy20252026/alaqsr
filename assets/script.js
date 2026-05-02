@@ -252,6 +252,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (salesItems && salesTemplate && salesDataElement) {
         const salesData = safeJsonParse(salesDataElement, {});
+        const salesMinPriceMessage = salesDataElement.getAttribute("data-min-price-message") || "السعر أقل من الحد الأدنى المسموح";
 
         function formatSalesMoney(value) {
             return Number(value || 0).toFixed(2) + " ج";
@@ -262,9 +263,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         function syncSalesInvoiceType() {
-            const isSaleInvoice = !salesInvoiceType || salesInvoiceType.value === "sale";
+            if (!salesInvoiceType) {
+                return;
+            }
 
-            if (salesModeLabelElement && salesInvoiceType) {
+            const isSaleInvoice = salesInvoiceType.value === "sale";
+
+            if (salesModeLabelElement) {
                 salesModeLabelElement.textContent = isSaleInvoice ? "بيع" : "مرتجع";
             }
 
@@ -351,7 +356,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (itemSelect && itemSelect.value && Number(priceInput.value || 0) < minPrice) {
-                    priceInput.setCustomValidity("السعر أقل من الحد الأدنى المسموح");
+                    priceInput.setCustomValidity(salesMinPriceMessage);
                 } else {
                     priceInput.setCustomValidity("");
                 }

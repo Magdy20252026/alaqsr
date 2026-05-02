@@ -196,6 +196,7 @@ $invoiceTypes = getSalesInvoiceTypes();
 $filterDate = normalizeSalesCashierDate($_GET['filter_date'] ?? $_POST['filter_date'] ?? date('Y-m-d'));
 $errorMessage = '';
 $successMessage = getSalesCashierMessage($_GET['message'] ?? '');
+$salesMinimumPercentLabel = rtrim(rtrim(number_format(SALES_MIN_PRICE_RATIO * 100, 2, '.', ''), '0'), '.');
 
 $employeesStmt = $conn->prepare("SELECT id, employee_name FROM employees ORDER BY employee_name ASC");
 $employeesStmt->execute();
@@ -392,7 +393,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $quantity = (float) $quantityInput;
 
                 if ($unitPrice < $minimumAllowed) {
-                    $errorMessage = 'لا يمكن أن يقل سعر الصنف عن 50% من السعر المسجل';
+                    $errorMessage = 'لا يمكن أن يقل سعر الصنف عن ' . $salesMinimumPercentLabel . '% من السعر المسجل';
                     break;
                 }
 
@@ -965,7 +966,11 @@ if ($invoiceIds) {
         </div>
     </template>
 
-    <script type="application/json" id="salesItemsData"><?php echo json_encode($itemsJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
+    <script
+        type="application/json"
+        id="salesItemsData"
+        data-min-price-message="<?php echo htmlspecialchars('لا يمكن أن يقل سعر الصنف عن ' . $salesMinimumPercentLabel . '% من السعر المسجل', ENT_QUOTES); ?>"
+    ><?php echo json_encode($itemsJs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
     <script src="assets/script.js"></script>
 </body>
 </html>
