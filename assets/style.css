@@ -1308,3 +1308,289 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
         justify-content: flex-start;
     }
 }
+
+
+.attendance-content-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.attendance-page-header {
+    margin-bottom: 0;
+}
+
+.attendance-overview {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    margin-bottom: 0;
+}
+
+.attendance-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.attendance-scan-card {
+    padding: 24px;
+}
+
+.attendance-scan-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.attendance-barcode-field input {
+    text-align: center;
+    letter-spacing: 0.08em;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.attendance-actions-row {
+    justify-content: flex-start;
+}
+
+.mobile-camera-button {
+    display: none;
+}
+
+.status-box {
+    border-radius: 18px;
+    padding: 16px 18px;
+    font-size: 15px;
+    font-weight: 900;
+    border: 1px solid transparent;
+}
+
+.status-box-success {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.28);
+    color: #065f46;
+}
+
+.status-box-danger {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.24);
+    color: #991b1b;
+}
+
+body.dark-mode .status-box-success {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.28);
+    color: #d1fae5;
+}
+
+body.dark-mode .status-box-danger {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.28);
+    color: #fecaca;
+}
+
+.attendance-table-wrap {
+    margin-top: 0;
+}
+
+.attendance-table {
+    min-width: 1380px;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 900;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.status-success {
+    background: rgba(16, 185, 129, 0.14);
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.24);
+}
+
+.status-warning {
+    background: rgba(245, 158, 11, 0.14);
+    color: #b45309;
+    border-color: rgba(245, 158, 11, 0.24);
+}
+
+.status-danger {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.22);
+}
+
+.status-secondary {
+    background: rgba(99, 102, 241, 0.12);
+    color: #4338ca;
+    border-color: rgba(99, 102, 241, 0.22);
+}
+
+.status-info {
+    background: rgba(37, 99, 235, 0.12);
+    color: #1d4ed8;
+    border-color: rgba(37, 99, 235, 0.22);
+}
+
+.status-muted {
+    background: rgba(148, 163, 184, 0.16);
+    color: var(--sub-text);
+    border-color: rgba(148, 163, 184, 0.24);
+}
+
+body.dark-mode .status-success {
+    background: rgba(16, 185, 129, 0.18);
+    color: #d1fae5;
+    border-color: rgba(16, 185, 129, 0.26);
+}
+
+body.dark-mode .status-warning {
+    background: rgba(245, 158, 11, 0.20);
+    color: #fde68a;
+    border-color: rgba(245, 158, 11, 0.28);
+}
+
+body.dark-mode .status-danger {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fecaca;
+    border-color: rgba(239, 68, 68, 0.28);
+}
+
+body.dark-mode .status-secondary {
+    background: rgba(99, 102, 241, 0.18);
+    color: #e0e7ff;
+    border-color: rgba(99, 102, 241, 0.28);
+}
+
+body.dark-mode .status-info {
+    background: rgba(59, 130, 246, 0.18);
+    color: #dbeafe;
+    border-color: rgba(59, 130, 246, 0.28);
+}
+
+body.dark-mode .status-muted {
+    background: rgba(51, 65, 85, 0.54);
+    color: #cbd5e1;
+    border-color: rgba(148, 163, 184, 0.20);
+}
+
+.camera-sheet[hidden] {
+    display: none;
+}
+
+.camera-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(2, 6, 23, 0.72);
+}
+
+.camera-sheet-card {
+    width: min(100%, 520px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.camera-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--text-color);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.camera-close-button {
+    min-height: 44px;
+    padding: 10px 16px;
+}
+
+#cameraScannerVideo {
+    width: 100%;
+    min-height: 280px;
+    max-height: 60vh;
+    border-radius: 20px;
+    object-fit: cover;
+    background: #000;
+}
+
+.camera-sheet-status {
+    text-align: center;
+    color: var(--sub-text);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.8;
+}
+
+@media (max-width: 1200px) {
+    .attendance-overview {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    .attendance-overview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+    .mobile-camera-button {
+        display: inline-flex;
+    }
+}
+
+@media (max-width: 576px) {
+    .attendance-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .attendance-scan-card,
+    .camera-sheet-card {
+        padding: 18px;
+        border-radius: 20px;
+    }
+
+    .attendance-table {
+        min-width: 100%;
+    }
+
+    .attendance-barcode-field input {
+        font-size: 16px;
+    }
+
+    .camera-sheet {
+        padding: 14px;
+        align-items: flex-end;
+    }
+
+    .camera-sheet-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .camera-close-button {
+        width: 100%;
+    }
+
+    #cameraScannerVideo {
+        min-height: 240px;
+    }
+}

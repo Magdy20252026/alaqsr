@@ -16,7 +16,7 @@
         <?php if (canAccess('user_permissions')) { ?><a href="user_permissions.php" class="menu-btn permissions-btn <?php echo $currentPage === 'user_permissions.php' ? 'active-btn' : ''; ?>">🛡️ صلاحيات المستخدمين</a><?php } ?>
         <?php if (canAccess('services')) { ?><a href="services.php" class="menu-btn services-btn <?php echo $currentPage === 'services.php' ? 'active-btn' : ''; ?>">✂️ الخدمات</a><?php } ?>
         <?php if (canAccess('barbers')) { ?><a href="barbers.php" class="menu-btn barbers-btn <?php echo $currentPage === 'barbers.php' ? 'active-btn' : ''; ?>">💈 الحلاقين</a><?php } ?>
-        <?php if (canAccess('barbers_attendance')) { ?><a href="#" class="menu-btn attendance-btn">📅 حضور الحلاقين</a><?php } ?>
+        <?php if (canAccess('barbers_attendance')) { ?><a href="barbers_attendance.php" class="menu-btn attendance-btn <?php echo $currentPage === 'barbers_attendance.php' ? 'active-btn' : ''; ?>">📅 حضور الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_loans')) { ?><a href="#" class="menu-btn loans-btn">💵 سلف الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_deductions')) { ?><a href="#" class="menu-btn deductions-btn">📉 خصومات الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_payments')) { ?><a href="#" class="menu-btn payments-btn">💰 قبض حلاقين</a><?php } ?>
