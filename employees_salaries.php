@@ -474,7 +474,7 @@ if ($selectedEmployeeId > 0 && isset($employeesById[$selectedEmployeeId])) {
                     <section class="barber-payments-panel">
                         <div class="page-header barber-payments-panel-header">
                             <div>
-                                <h2 class="section-title barber-payments-mini-title">صرف القبض</h2>
+                                <h2 class="section-title barber-payments-mini-title">صرف الراتب</h2>
                             </div>
                         </div>
 
@@ -485,7 +485,7 @@ if ($selectedEmployeeId > 0 && isset($employeesById[$selectedEmployeeId])) {
                                     <strong class="overview-value barber-payment-highlight-value"><?php echo htmlspecialchars($selectedSummary['employee_name']); ?></strong>
                                 </div>
                                 <div class="barber-payment-highlight-box">
-                                    <span class="overview-label">مبلغ القبض</span>
+                                    <span class="overview-label">مبلغ الراتب المصروف</span>
                                     <strong class="overview-value barber-payment-highlight-value"><?php echo number_format($selectedSummary['payment_amount'], 2); ?> ج</strong>
                                 </div>
                             </div>
@@ -497,7 +497,7 @@ if ($selectedEmployeeId > 0 && isset($employeesById[$selectedEmployeeId])) {
                                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
                                     <input type="hidden" name="employee_id" value="<?php echo (int) $selectedEmployeeId; ?>">
                                     <div class="form-actions-row barber-payment-actions-row">
-                                        <button type="submit" class="btn btn-success">صرف قبض</button>
+                                        <button type="submit" class="btn btn-success">صرف الراتب</button>
                                     </div>
                                 </form>
                             <?php } ?>
@@ -672,7 +672,7 @@ if ($selectedEmployeeId > 0 && isset($employeesById[$selectedEmployeeId])) {
                                 <tr>
                                     <th>#</th>
                                     <th>الموظف</th>
-                                    <th>مبلغ القبض</th>
+                                    <th>المبلغ المصروف</th>
                                     <th>الراتب</th>
                                     <th>إجمالي السلف</th>
                                     <th>إجمالي الخصومات</th>
@@ -689,7 +689,7 @@ if ($selectedEmployeeId > 0 && isset($employeesById[$selectedEmployeeId])) {
                                         <tr>
                                             <td data-label="#"><?php echo (int) $paymentRow['id']; ?></td>
                                             <td data-label="الموظف"><?php echo htmlspecialchars((string) $paymentRow['employee_name']); ?></td>
-                                            <td data-label="مبلغ القبض"><?php echo number_format((float) $paymentRow['payment_amount'], 2); ?> ج</td>
+                                            <td data-label="المبلغ المصروف"><?php echo number_format((float) $paymentRow['payment_amount'], 2); ?> ج</td>
                                             <td data-label="الراتب"><?php echo number_format((float) $paymentRow['base_salary'], 2); ?> ج</td>
                                             <td data-label="إجمالي السلف"><?php echo number_format((float) $paymentRow['total_loans'], 2); ?> ج</td>
                                             <td data-label="إجمالي الخصومات"><?php echo number_format((float) $paymentRow['total_deductions'], 2); ?> ج</td>
