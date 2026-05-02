@@ -11,17 +11,17 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-function getEmployeeSalaryEmployeeId($value)
+function parseEmployeeId($value)
 {
     return ctype_digit((string) $value) ? (int) $value : 0;
 }
 
-function formatEmployeeSalaryAmount($value)
+function formatAmount($value)
 {
     return number_format((float) $value, 2, '.', '');
 }
 
-function getEmployeeSalaryMonthLabel($monthStart)
+function formatMonthLabel($monthStart)
 {
     $timestamp = strtotime($monthStart);
 
@@ -32,7 +32,7 @@ function getEmployeeSalaryMonthLabel($monthStart)
     return date('m/Y', $timestamp);
 }
 
-function getEmployeeSalarySummary($conn, $employeeId, $monthStart, $nextMonthStart)
+function calculateEmployeeMonthlySummary($conn, $employeeId, $monthStart, $nextMonthStart)
 {
     $employeeStmt = $conn->prepare(
         "SELECT employee_name, salary_amount
@@ -214,10 +214,10 @@ if (!$currentMonthDate || $currentMonthDate->format('Y-m-d') !== $currentMonthSt
 }
 
 $nextMonthStart = $currentMonthDate->modify('+1 month')->format('Y-m-d');
-$currentMonthLabel = getEmployeeSalaryMonthLabel($currentMonthStart);
+$currentMonthLabel = formatMonthLabel($currentMonthStart);
 $errorMessage = '';
 $successMessage = trim((string) ($_GET['success'] ?? ''));
-$selectedEmployeeId = getEmployeeSalaryEmployeeId($_GET['employee_id'] ?? '');
+$selectedEmployeeId = parseEmployeeId($_GET['employee_id'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $csrfToken = $_POST['csrf_token'] ?? '';
@@ -227,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die("الطلب غير صالح");
     }
 
-    $selectedEmployeeId = getEmployeeSalaryEmployeeId($_POST['employee_id'] ?? '');
+    $selectedEmployeeId = parseEmployeeId($_POST['employee_id'] ?? '');
 
     if ($selectedEmployeeId <= 0) {
         $errorMessage = 'اختر الموظف أولاً';
@@ -256,7 +256,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('تم صرف راتب هذا الموظف خلال الشهر الحالي بالفعل');
             }
 
-            $summary = getEmployeeSalarySummary($conn, $selectedEmployeeId, $currentMonthStart, $nextMonthStart);
+            $summary = calculateEmployeeMonthlySummary($conn, $selectedEmployeeId, $currentMonthStart, $nextMonthStart);
             $insertStmt = $conn->prepare(
                 "INSERT INTO employees_salary_payments (
                     employee_id,
@@ -274,11 +274,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $insertStmt->execute([
                 $selectedEmployeeId,
                 $currentMonthStart,
-                formatEmployeeSalaryAmount($summary['payment_amount']),
-                formatEmployeeSalaryAmount($summary['salary_amount']),
-                formatEmployeeSalaryAmount($summary['loan_total']),
-                formatEmployeeSalaryAmount($summary['deduction_total']),
-                formatEmployeeSalaryAmount($summary['net_amount']),
+                formatAmount($summary['payment_amount']),
+                formatAmount($summary['salary_amount']),
+                formatAmount($summary['loan_total']),
+                formatAmount($summary['deduction_total']),
+                formatAmount($summary['net_amount']),
                 $summary['attendance_count'],
                 $summary['departure_count'],
                 $summary['absence_count']
@@ -371,7 +371,7 @@ $selectedPayment = null;
 
 if ($selectedEmployeeId > 0 && isset($employeesById[$selectedEmployeeId])) {
     $selectedEmployee = $employeesById[$selectedEmployeeId];
-    $selectedSummary = getEmployeeSalarySummary($conn, $selectedEmployeeId, $currentMonthStart, $nextMonthStart);
+    $selectedSummary = calculateEmployeeMonthlySummary($conn, $selectedEmployeeId, $currentMonthStart, $nextMonthStart);
     $selectedPayment = $paymentsByEmployeeId[$selectedEmployeeId] ?? null;
 }
 ?>
