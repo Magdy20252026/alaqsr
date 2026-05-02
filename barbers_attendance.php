@@ -121,6 +121,19 @@ function needsAbsenceRefresh($record)
     return canResetEmptyAttendanceRecord($record) && (((int) $record['is_off_day']) === 1 || $record['day_status'] === 'إجازة');
 }
 
+function extractAttendanceCreatedDate($createdAt, $fallbackDate)
+{
+    if (!is_string($createdAt) || trim($createdAt) === '') {
+        return $fallbackDate;
+    }
+
+    try {
+        return (new DateTimeImmutable($createdAt))->format('Y-m-d');
+    } catch (Exception $exception) {
+        return $fallbackDate;
+    }
+}
+
 function syncBarbersAttendanceArchive($conn, $barbers, $weekDays, $todayDate)
 {
     $selectStmt = $conn->prepare(
@@ -155,7 +168,7 @@ function syncBarbersAttendanceArchive($conn, $barbers, $weekDays, $todayDate)
 
     foreach ($barbers as $barber) {
         $createdAt = isset($barber['created_at']) ? (string) $barber['created_at'] : '';
-        $createdDate = substr($createdAt, 0, 10);
+        $createdDate = extractAttendanceCreatedDate($createdAt, $todayDate);
 
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $createdDate) || $createdDate > $todayDate) {
             $createdDate = $todayDate;
@@ -665,7 +678,7 @@ foreach ($attendanceRecords as $recordSummary) {
                 <button type="button" class="btn btn-danger camera-close-button" id="closeCameraScanner">إغلاق</button>
             </div>
             <video id="cameraScannerVideo" playsinline></video>
-            <div class="camera-sheet-status" id="cameraScannerStatus">وجّه الكاميرا نحو باركود Code 128 أو EAN أو QR</div>
+            <div class="camera-sheet-status" id="cameraScannerStatus">وجّه الكاميرا نحو باركود Code 128 أو EAN أو كيو آر</div>
         </div>
     </div>
 
@@ -770,7 +783,7 @@ foreach ($attendanceRecords as $recordSummary) {
                 }
 
                 try {
-                    cameraStatus.textContent = 'وجّه الكاميرا نحو باركود Code 128 أو EAN أو QR';
+                    cameraStatus.textContent = 'وجّه الكاميرا نحو باركود Code 128 أو EAN أو كيو آر';
                     cameraSheet.hidden = false;
                     cameraStream = await navigator.mediaDevices.getUserMedia({
                         video: {
