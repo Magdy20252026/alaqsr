@@ -758,6 +758,115 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
     gap: 24px;
 }
 
+
+.barber-payments-content-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.barber-payments-overview {
+    margin-bottom: 0;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.barber-payments-top-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+}
+
+.barber-payments-log-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.barber-payments-panel {
+    background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(241,245,249,0.78));
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    padding: 20px;
+}
+
+.barber-payments-panel-header {
+    margin-bottom: 18px;
+}
+
+.barber-payments-mini-title {
+    font-size: 24px;
+}
+
+.barber-payment-select-form,
+.barber-payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.barber-payment-actions-row {
+    justify-content: flex-start;
+}
+
+.barber-payment-empty-state {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-color);
+    border-radius: 20px;
+    padding: 22px 18px;
+    font-size: 16px;
+    font-weight: 900;
+    text-align: center;
+}
+
+.barber-payment-highlight-grid,
+.barber-payments-summary-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.barber-payment-highlight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 18px;
+}
+
+.barber-payments-summary-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.barber-payment-highlight-box,
+.barber-payment-stat-box {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 20px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.barber-payment-highlight-value {
+    font-size: 22px;
+}
+
+.barber-payments-table {
+    min-width: 100%;
+}
+
+body.dark-mode .barber-payments-panel {
+    background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(15,23,42,0.78));
+    border-color: rgba(148, 163, 184, 0.16);
+}
+
+body.dark-mode .barber-payment-empty-state,
+body.dark-mode .barber-payment-highlight-box,
+body.dark-mode .barber-payment-stat-box {
+    background: rgba(2, 6, 23, 0.72);
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+
 .cashier-overview {
     margin-bottom: 0;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1316,7 +1425,18 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     .cashier-overview {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .barber-payments-overview {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .barber-payments-top-grid,
+    .barber-payments-log-grid,
+    .barber-payments-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
+
 
 @media (max-width: 992px) {
     .login-card {
@@ -1389,7 +1509,16 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     .cashier-overview {
         grid-template-columns: 1fr;
     }
+
+    .barber-payments-overview,
+    .barber-payments-top-grid,
+    .barber-payments-log-grid,
+    .barber-payments-summary-grid,
+    .barber-payment-highlight-grid {
+        grid-template-columns: 1fr;
+    }
 }
+
 
 @media (max-width: 576px) {
     .top-bar {
@@ -1506,6 +1635,15 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     }
 
     .cashier-mini-title {
+        font-size: 22px;
+    }
+
+    .barber-payments-panel {
+        padding: 16px;
+        border-radius: 20px;
+    }
+
+    .barber-payments-mini-title {
         font-size: 22px;
     }
 

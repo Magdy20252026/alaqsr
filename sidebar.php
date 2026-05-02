@@ -19,7 +19,7 @@
         <?php if (canAccess('barbers_attendance')) { ?><a href="barbers_attendance.php" class="menu-btn attendance-btn <?php echo $currentPage === 'barbers_attendance.php' ? 'active-btn' : ''; ?>">📅 حضور الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_loans')) { ?><a href="barbers_loans.php" class="menu-btn loans-btn <?php echo $currentPage === 'barbers_loans.php' ? 'active-btn' : ''; ?>">💵 سلف الحلاقين</a><?php } ?>
         <?php if (canAccess('barbers_deductions')) { ?><a href="barbers_deductions.php" class="menu-btn deductions-btn <?php echo $currentPage === 'barbers_deductions.php' ? 'active-btn' : ''; ?>">📉 خصومات الحلاقين</a><?php } ?>
-        <?php if (canAccess('barbers_payments')) { ?><a href="#" class="menu-btn payments-btn">💰 قبض حلاقين</a><?php } ?>
+        <?php if (canAccess('barbers_payments')) { ?><a href="barbers_payments.php" class="menu-btn payments-btn <?php echo $currentPage === 'barbers_payments.php' ? 'active-btn' : ''; ?>">💰 قبض حلاقين</a><?php } ?>
         <?php if (canAccess('employees')) { ?><a href="employees.php" class="menu-btn employees-btn <?php echo $currentPage === 'employees.php' ? 'active-btn' : ''; ?>">🧑‍💼 الموظفين</a><?php } ?>
         <?php if (canAccess('employees_attendance')) { ?><a href="employees_attendance.php" class="menu-btn attendance2-btn <?php echo $currentPage === 'employees_attendance.php' ? 'active-btn' : ''; ?>">🗓️ حضور الموظفين</a><?php } ?>
         <?php if (canAccess('employees_loans')) { ?><a href="employees_loans.php" class="menu-btn loans2-btn <?php echo $currentPage === 'employees_loans.php' ? 'active-btn' : ''; ?>">💸 سلف الموظفين</a><?php } ?>
