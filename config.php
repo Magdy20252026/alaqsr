@@ -13,13 +13,7 @@ $password = "6Mq8FJU02jepJ";
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    try {
-        $conn->exec('SET time_zone = ' . $conn->quote(APP_TIMEZONE));
-    } catch (PDOException $timezoneException) {
-        error_log('MySQL named timezone unavailable; falling back to offset: ' . $timezoneException->getMessage());
-        $conn->exec('SET time_zone = ' . $conn->quote(APP_TIMEZONE_OFFSET));
-    }
+    $conn->exec('SET time_zone = ' . $conn->quote(APP_TIMEZONE_OFFSET));
 } catch (PDOException $e) {
     die("فشل الاتصال بقاعدة البيانات أو ضبط التوقيت");
 }
