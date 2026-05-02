@@ -166,6 +166,21 @@ function extractAttendanceCreatedDate($createdAt, $fallbackDate)
     }
 }
 
+function formatAttendanceDateTimeValue($dateTimeValue)
+{
+    if (!is_string($dateTimeValue) || trim($dateTimeValue) === '') {
+        return '—';
+    }
+
+    $timestamp = strtotime($dateTimeValue);
+
+    if ($timestamp === false) {
+        return '—';
+    }
+
+    return date('Y-m-d h:i A', $timestamp);
+}
+
 function syncEmployeesAttendanceArchive($conn, $employees, $weekDays, $todayDate)
 {
     $selectStmt = $conn->prepare(
@@ -670,7 +685,7 @@ foreach ($attendanceRecords as $recordSummary) {
                                         <td data-label="👤 الموظف"><?php echo htmlspecialchars($record['employee_name']); ?></td>
                                         <td data-label="🏷️ الباركود"><?php echo htmlspecialchars($record['employee_barcode'] !== '' ? $record['employee_barcode'] : $record['employee_number']); ?></td>
                                         <td data-label="🕘 الحضور المحدد"><?php echo htmlspecialchars($record['scheduled_attendance_time']); ?></td>
-                                        <td data-label="🟢 الحضور الفعلي"><?php echo $record['check_in_at'] ? htmlspecialchars(date('Y-m-d h:i A', strtotime($record['check_in_at']))) : '—'; ?></td>
+                                        <td data-label="🟢 الحضور الفعلي"><?php echo htmlspecialchars(formatAttendanceDateTimeValue($record['check_in_at'] ?? '')); ?></td>
                                         <td data-label="📌 حالة الحضور">
                                             <?php if ($record['attendance_status'] !== '') { ?>
                                                 <span class="status-pill status-<?php echo getStatusTone($record['attendance_status']); ?>"><?php echo htmlspecialchars($record['attendance_status']); ?></span>
@@ -679,7 +694,7 @@ foreach ($attendanceRecords as $recordSummary) {
                                             <?php } ?>
                                         </td>
                                         <td data-label="🌙 الانصراف المحدد"><?php echo htmlspecialchars($record['scheduled_departure_time']); ?></td>
-                                        <td data-label="🔵 الانصراف الفعلي"><?php echo $record['check_out_at'] ? htmlspecialchars(date('Y-m-d h:i A', strtotime($record['check_out_at']))) : '—'; ?></td>
+                                        <td data-label="🔵 الانصراف الفعلي"><?php echo htmlspecialchars(formatAttendanceDateTimeValue($record['check_out_at'] ?? '')); ?></td>
                                         <td data-label="📌 حالة الانصراف">
                                             <?php if ($record['departure_status'] !== '') { ?>
                                                 <span class="status-pill status-<?php echo getStatusTone($record['departure_status']); ?>"><?php echo htmlspecialchars($record['departure_status']); ?></span>
