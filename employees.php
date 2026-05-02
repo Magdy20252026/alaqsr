@@ -92,6 +92,17 @@ function getEmployeeTextLength($value)
     return strlen($value);
 }
 
+function getEmployeeBarcodeValue($barcode, $employeeNumber)
+{
+    $barcodeValue = trim((string) $barcode);
+
+    if ($barcodeValue !== '') {
+        return $barcodeValue;
+    }
+
+    return trim((string) $employeeNumber);
+}
+
 try {
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS employees (
@@ -121,7 +132,8 @@ try {
         try {
             $conn->exec("ALTER TABLE employees ADD COLUMN employee_barcode VARCHAR(100) NOT NULL DEFAULT '' AFTER employee_number");
         } catch (PDOException $migrationException) {
-            $duplicateColumn = ($migrationException->errorInfo[1] ?? null) === MYSQL_ERROR_DUPLICATE_COLUMN;
+            $duplicateColumn = isset($migrationException->errorInfo[1])
+                && (int) $migrationException->errorInfo[1] === MYSQL_ERROR_DUPLICATE_COLUMN;
             if (!$duplicateColumn) {
                 throw $migrationException;
             }
@@ -223,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $formattedSalary = number_format($salaryValue, 2, '.', '');
             $offDaysJson = json_encode(array_values($formData['off_days']), JSON_UNESCAPED_UNICODE);
-            $barcodeValue = $formData['employee_barcode'] !== '' ? $formData['employee_barcode'] : $formData['employee_number'];
+            $barcodeValue = getEmployeeBarcodeValue($formData['employee_barcode'], $formData['employee_number']);
 
             if ($formData['id'] === '') {
                 $stmt = $conn->prepare(
