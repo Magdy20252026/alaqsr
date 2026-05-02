@@ -114,8 +114,7 @@ $allPages = [
     'sales_cashier' => '🛒 كاشير المبيعات',
     'expenses' => '🧾 مصروفات',
     'statistics' => '📊 إحصائيات',
-    'daily_closing' => '📘 تقفيل يومي',
-    'monthly_closing' => '📗 تقفيل شهري',
+    'appointments' => '📅 الحجوزات',
     'site_settings' => '⚙️ إعدادت الموقع'
 ];
 ?>

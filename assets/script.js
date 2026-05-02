@@ -440,4 +440,105 @@ document.addEventListener("DOMContentLoaded", function () {
         updateSalesRemoveButtons();
         updateSalesTotals();
     }
+
+    const bookingTimeInput = document.querySelector("[data-booking-time-input]");
+
+    if (bookingTimeInput) {
+        const now = new Date();
+        const minDate = new Date(now.getTime() - 5 * 60000);
+        const minHours = String(minDate.getHours()).padStart(2, "0");
+        const minMinutes = String(minDate.getMinutes()).padStart(2, "0");
+        bookingTimeInput.min = minHours + ":" + minMinutes;
+    }
+
+    const bookingAlertsElement = document.getElementById("bookingAlertsData");
+
+    if (bookingAlertsElement && window.fetch) {
+        const bookingAlertsData = safeJsonParse(bookingAlertsElement, {});
+        const notificationsUrl = bookingAlertsData && bookingAlertsData.url ? bookingAlertsData.url : "";
+
+        if (notificationsUrl) {
+            const toastContainer = document.createElement("div");
+            toastContainer.className = "notification-toast-container";
+            body.appendChild(toastContainer);
+
+            let isPollingNotifications = false;
+
+            function showBookingToast(notification) {
+                const toast = document.createElement("div");
+                toast.className = "notification-toast notification-toast-" + (notification.type || "new");
+                toast.innerHTML =
+                    '<strong class="notification-toast-title"></strong>' +
+                    '<div class="notification-toast-body"></div>';
+
+                const titleElement = toast.querySelector(".notification-toast-title");
+                const bodyElement = toast.querySelector(".notification-toast-body");
+
+                if (titleElement) {
+                    titleElement.textContent = notification.title || "تنبيه";
+                }
+
+                if (bodyElement) {
+                    bodyElement.textContent = notification.body || "";
+                }
+
+                toastContainer.appendChild(toast);
+
+                window.setTimeout(function () {
+                    toast.remove();
+                }, 8000);
+            }
+
+            function showBrowserNotification(notification) {
+                if (!("Notification" in window) || Notification.permission !== "granted") {
+                    return;
+                }
+
+                new Notification(notification.title || "تنبيه", {
+                    body: notification.body || ""
+                });
+            }
+
+            function pollBookingNotifications() {
+                if (isPollingNotifications) {
+                    return;
+                }
+
+                isPollingNotifications = true;
+
+                fetch(notificationsUrl, {
+                    credentials: "same-origin",
+                    cache: "no-store"
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error("notifications_request_failed");
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (data) {
+                        const notifications = Array.isArray(data.notifications) ? data.notifications : [];
+
+                        notifications.forEach(function (notification) {
+                            showBookingToast(notification);
+                            showBrowserNotification(notification);
+                        });
+                    })
+                    .catch(function () {})
+                    .finally(function () {
+                        isPollingNotifications = false;
+                    });
+            }
+
+            if ("Notification" in window && Notification.permission === "default") {
+                window.setTimeout(function () {
+                    Notification.requestPermission().catch(function () {});
+                }, 1200);
+            }
+
+            pollBookingNotifications();
+            window.setInterval(pollBookingNotifications, 60000);
+        }
+    }
 });
