@@ -704,7 +704,15 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
     grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr) auto;
 }
 
+.items-form-grid {
+    grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr)) auto;
+}
+
 .services-actions-row {
+    justify-content: flex-start;
+}
+
+.items-actions-row {
     justify-content: flex-start;
 }
 
@@ -712,6 +720,13 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
 .staff-form-grid,
 .loan-form-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.items-overview {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 22px;
 }
 
 .barbers-overview,
@@ -1325,6 +1340,45 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
     min-width: 100%;
 }
 
+.items-table {
+    min-width: 100%;
+}
+
+.items-content-card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.items-wide-field {
+    grid-column: span 2;
+}
+
+.items-quantity-hidden {
+    display: none;
+}
+
+.item-type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 116px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.item-type-badge-fixed {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.item-type-badge-quantity {
+    background: linear-gradient(135deg, #10b981, #059669);
+}
+
 .action-cell {
     display: flex;
     justify-content: center;
@@ -1397,12 +1451,14 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .items-form-grid,
     .barbers-form-grid,
     .staff-form-grid,
     .loan-form-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .items-overview,
     .barbers-overview,
     .staff-overview,
     .loans-overview,
@@ -1604,6 +1660,7 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
         grid-template-columns: 1fr;
     }
 
+    .items-form-grid,
     .barbers-form-grid,
     .staff-form-grid,
     .loan-form-grid,
@@ -1613,6 +1670,7 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
 
     .barber-wide-field,
     .staff-wide-field,
+    .items-wide-field,
     .deduction-wide-field {
         grid-column: span 1;
     }
@@ -1621,6 +1679,7 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
         grid-template-columns: 1fr;
     }
 
+    .items-overview,
     .off-days-grid {
         grid-template-columns: 1fr;
     }

@@ -42,6 +42,30 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    const itemPricingType = document.querySelector("[data-item-pricing-type]");
+    const itemQuantityField = document.querySelector("[data-item-quantity-field]");
+
+    if (itemPricingType && itemQuantityField) {
+        const quantityInput = itemQuantityField.querySelector("input");
+
+        function syncItemPricingFields() {
+            const needsQuantity = itemPricingType.value === "quantity_price";
+            itemQuantityField.classList.toggle("items-quantity-hidden", !needsQuantity);
+
+            if (quantityInput) {
+                quantityInput.required = needsQuantity;
+
+                if (!needsQuantity) {
+                    quantityInput.value = "";
+                    quantityInput.setCustomValidity("");
+                }
+            }
+        }
+
+        itemPricingType.addEventListener("change", syncItemPricingFields);
+        syncItemPricingFields();
+    }
+
     document.querySelectorAll("form[data-confirm-message]").forEach(function (form) {
         form.addEventListener("submit", function (event) {
             if (!window.confirm(form.getAttribute("data-confirm-message") || "هل أنت متأكد؟")) {
