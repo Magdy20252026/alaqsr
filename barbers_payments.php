@@ -225,7 +225,8 @@ try {
 
 $settings = getSiteSettings($conn);
 $currentMonthStart = date('Y-m-01');
-$nextMonthStart = (new DateTimeImmutable($currentMonthStart))->modify('+1 month')->format('Y-m-d');
+$currentMonthDate = DateTimeImmutable::createFromFormat('Y-m-d', $currentMonthStart) ?: new DateTimeImmutable(date('Y-m-01'));
+$nextMonthStart = $currentMonthDate->modify('+1 month')->format('Y-m-d');
 $currentMonthLabel = getBarberPaymentMonthLabel($currentMonthStart);
 $errorMessage = '';
 $successMessage = trim((string) ($_GET['success'] ?? ''));
@@ -484,8 +485,8 @@ if ($selectedBarberId > 0 && isset($barbersById[$selectedBarberId])) {
                         <?php if ($eligibleBarbers) { ?>
                             <form method="get" class="barber-payment-select-form">
                                 <div class="field-group horizontal-field">
-                                    <label>الحلاق</label>
-                                    <select name="barber_id" required>
+                                    <label for="barberPaymentSelect">الحلاق</label>
+                                    <select name="barber_id" id="barberPaymentSelect" required>
                                         <option value="">اختر الحلاق</option>
                                         <?php foreach ($eligibleBarbers as $eligibleBarber) { ?>
                                             <option value="<?php echo (int) $eligibleBarber['id']; ?>" <?php echo $selectedBarberId === (int) $eligibleBarber['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($eligibleBarber['barber_name']); ?></option>
@@ -530,8 +531,8 @@ if ($selectedBarberId > 0 && isset($barbersById[$selectedBarberId])) {
                                     <input type="hidden" name="barber_id" value="<?php echo (int) $selectedBarberId; ?>">
 
                                     <div class="field-group horizontal-field">
-                                        <label>مبلغ قبض الحلاق</label>
-                                        <input type="number" name="payment_amount" min="0.01" step="0.01" required value="<?php echo htmlspecialchars($defaultPaymentAmount); ?>">
+                                        <label for="barberPaymentAmount">مبلغ قبض الحلاق</label>
+                                        <input type="number" id="barberPaymentAmount" name="payment_amount" min="0.01" step="0.01" required value="<?php echo htmlspecialchars($defaultPaymentAmount); ?>">
                                     </div>
 
                                     <div class="form-actions-row barber-payment-actions-row">
