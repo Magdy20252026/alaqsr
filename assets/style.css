@@ -80,7 +80,8 @@ a {
 
 button,
 input,
-select {
+select,
+textarea {
     font-family: inherit;
 }
 
@@ -339,7 +340,8 @@ body.dark-mode .brand-side {
 
 .input-box:focus-within,
 .field-group input:focus,
-.field-group select:focus {
+.field-group select:focus,
+.field-group textarea:focus {
     border-color: var(--primary-solid);
     box-shadow: var(--glow);
     transform: translateY(-1px);
@@ -353,9 +355,9 @@ body.dark-mode .brand-side {
 
 .input-box input,
 .field-group input,
-.field-group select {
+.field-group select,
+.field-group textarea {
     width: 100%;
-    height: 58px;
     border: 2px solid var(--input-border);
     outline: none;
     background: var(--input-bg);
@@ -365,6 +367,19 @@ body.dark-mode .brand-side {
     padding: 0 14px;
     border-radius: 18px;
     transition: 0.3s ease;
+}
+
+.input-box input,
+.field-group input,
+.field-group select {
+    height: 58px;
+}
+
+.field-group textarea {
+    min-height: 118px;
+    padding: 14px;
+    line-height: 1.8;
+    resize: vertical;
 }
 
 .input-box input {
@@ -792,8 +807,21 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
     margin-bottom: 0;
 }
 
+.deduction-form-grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) minmax(0, 1.6fr) auto;
+    margin-bottom: 0;
+}
+
+.deduction-wide-field {
+    align-self: stretch;
+}
+
 .loans-table {
     min-width: 100%;
+}
+
+.deductions-table {
+    min-width: 1080px;
 }
 
 .amount-badge {
@@ -807,6 +835,23 @@ body.dark-mode .sidebar::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(37, 99, 235, 0.16));
     border: 1px solid rgba(16, 185, 129, 0.22);
     color: var(--text-color);
+}
+
+.reason-badge {
+    display: inline-flex;
+    width: 100%;
+    min-height: 48px;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 14px;
+    border-radius: 18px;
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.12);
+    color: var(--text-color);
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.8;
+    text-align: right;
 }
 
 .time-selects {
@@ -962,6 +1007,11 @@ body.dark-mode .loan-form-card {
 body.dark-mode .amount-badge {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.20), rgba(59, 130, 246, 0.18));
     border-color: rgba(245, 158, 11, 0.24);
+}
+
+body.dark-mode .reason-badge {
+    background: rgba(30, 41, 59, 0.68);
+    border-color: rgba(148, 163, 184, 0.18);
 }
 
 body.dark-mode .off-days-panel {
@@ -1241,6 +1291,11 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
         font-size: 15px;
     }
 
+    .field-group textarea {
+        font-size: 15px;
+        min-height: 104px;
+    }
+
     .login-btn,
     .btn {
         min-height: 52px;
@@ -1257,12 +1312,14 @@ body.dark-mode .off-day-option input:checked + .off-day-pill .off-day-check {
 
     .barbers-form-grid,
     .staff-form-grid,
-    .loan-form-grid {
+    .loan-form-grid,
+    .deduction-form-grid {
         grid-template-columns: 1fr;
     }
 
     .barber-wide-field,
-    .staff-wide-field {
+    .staff-wide-field,
+    .deduction-wide-field {
         grid-column: span 1;
     }
 
