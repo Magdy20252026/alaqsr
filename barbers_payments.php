@@ -225,7 +225,7 @@ try {
 
 $settings = getSiteSettings($conn);
 $currentMonthStart = date('Y-m-01');
-$nextMonthStart = (new DateTimeImmutable($currentMonthStart))->modify('first day of next month')->format('Y-m-d');
+$nextMonthStart = (new DateTimeImmutable($currentMonthStart))->modify('+1 month')->format('Y-m-d');
 $currentMonthLabel = getBarberPaymentMonthLabel($currentMonthStart);
 $errorMessage = '';
 $successMessage = trim((string) ($_GET['success'] ?? ''));
@@ -393,11 +393,15 @@ foreach ($payments as $paymentRow) {
 $selectedSummary = null;
 $selectedBarber = null;
 $selectedPayment = null;
+$defaultPaymentAmount = '';
 
 if ($selectedBarberId > 0 && isset($barbersById[$selectedBarberId])) {
     $selectedBarber = $barbersById[$selectedBarberId];
     $selectedSummary = getBarberPaymentSummary($conn, $selectedBarberId, $currentMonthStart, $nextMonthStart);
     $selectedPayment = $paymentsByBarberId[$selectedBarberId] ?? null;
+    $defaultPaymentAmount = $paymentAmountValue !== ''
+        ? $paymentAmountValue
+        : ($selectedSummary['net_total'] > 0 ? formatBarberPaymentAmount($selectedSummary['net_total']) : '');
 }
 ?>
 <!DOCTYPE html>
@@ -527,7 +531,7 @@ if ($selectedBarberId > 0 && isset($barbersById[$selectedBarberId])) {
 
                                     <div class="field-group horizontal-field">
                                         <label>مبلغ قبض الحلاق</label>
-                                        <input type="number" name="payment_amount" min="0.01" step="0.01" required value="<?php echo htmlspecialchars($paymentAmountValue !== '' ? $paymentAmountValue : ($selectedSummary['net_total'] > 0 ? formatBarberPaymentAmount($selectedSummary['net_total']) : '')); ?>">
+                                        <input type="number" name="payment_amount" min="0.01" step="0.01" required value="<?php echo htmlspecialchars($defaultPaymentAmount); ?>">
                                     </div>
 
                                     <div class="form-actions-row barber-payment-actions-row">
