@@ -458,6 +458,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const notificationsUrl = bookingAlertsData && bookingAlertsData.url ? bookingAlertsData.url : "";
 
         if (notificationsUrl) {
+            const NOTIFICATION_POLL_INTERVAL_MS = 60000;
             const toastContainer = document.createElement("div");
             toastContainer.className = "notification-toast-container";
             body.appendChild(toastContainer);
@@ -494,9 +495,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                new Notification(notification.title || "تنبيه", {
+                const browserNotification = new Notification(notification.title || "تنبيه", {
                     body: notification.body || ""
                 });
+
+                window.setTimeout(function () {
+                    browserNotification.close();
+                }, 8000);
             }
 
             function pollBookingNotifications() {
@@ -538,7 +543,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             pollBookingNotifications();
-            window.setInterval(pollBookingNotifications, 60000);
+            const bookingNotificationsIntervalId = window.setInterval(pollBookingNotifications, NOTIFICATION_POLL_INTERVAL_MS);
+            window.addEventListener("beforeunload", function () {
+                window.clearInterval(bookingNotificationsIntervalId);
+            });
         }
     }
 });

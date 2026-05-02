@@ -14,6 +14,8 @@ if (($_SESSION['role'] ?? '') !== APP_MANAGER_ROLE || !canAccess('appointments')
     exit;
 }
 
+const MAX_NOTIFICATIONS_PER_POLL = 10;
+
 try {
     $conn->exec(
         "CREATE TABLE IF NOT EXISTS appointments (
@@ -68,7 +70,7 @@ try {
          FROM appointments
          WHERE appointment_date = ? AND is_arrived = 0 AND admin_created_notified_at IS NULL
          ORDER BY created_at ASC, id ASC
-         LIMIT 10"
+         LIMIT " . MAX_NOTIFICATIONS_PER_POLL
     );
     $newStmt->execute([$todayDate]);
     $newAppointments = $newStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -94,7 +96,7 @@ try {
            AND admin_reminder_notified_at IS NULL
            AND appointment_at BETWEEN ? AND ?
          ORDER BY appointment_at ASC, id ASC
-         LIMIT 10"
+         LIMIT " . MAX_NOTIFICATIONS_PER_POLL
     );
     $reminderStmt->execute([
         $todayDate,

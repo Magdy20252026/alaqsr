@@ -11,6 +11,13 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+const APPOINTMENT_TIME_STEP_SECONDS = 900;
+
+function roundTimestampToNextInterval($timestamp, $intervalSeconds)
+{
+    return (int) (ceil(($timestamp + $intervalSeconds) / $intervalSeconds) * $intervalSeconds);
+}
+
 function isAppointmentPhoneValue($value)
 {
     return is_string($value) && preg_match('/^(?=.*\p{N})[\p{N}\+\-\s\(\)]+$/u', $value) === 1;
@@ -35,11 +42,10 @@ function normalizeAppointmentTime($value)
 
 function getDefaultAppointmentTime()
 {
-    $now = new DateTimeImmutable('now', new DateTimeZone(APP_TIMEZONE));
-    $candidate = $now->modify('+15 minutes');
-    $minutes = (int) $candidate->format('i');
-    $roundedMinutes = (int) (ceil($minutes / 15) * 15);
-    $candidate = $candidate->setTime((int) $candidate->format('H'), 0)->modify('+' . $roundedMinutes . ' minutes');
+    $timezone = new DateTimeZone(APP_TIMEZONE);
+    $now = new DateTimeImmutable('now', $timezone);
+    $roundedTimestamp = roundTimestampToNextInterval($now->getTimestamp(), APPOINTMENT_TIME_STEP_SECONDS);
+    $candidate = (new DateTimeImmutable('@' . $roundedTimestamp))->setTimezone($timezone);
 
     if ($candidate->format('Y-m-d') !== $now->format('Y-m-d')) {
         return '23:45';
@@ -166,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             die("غير مصرح");
         }
 
-        $deleteStmt = $conn->prepare("DELETE FROM appointments WHERE id = ? LIMIT 1");
+        $deleteStmt = $conn->prepare("DELETE FROM appointments WHERE id = ?");
         $deleteStmt->execute([(int) $_POST['delete_booking_id']]);
         header("Location: bookings.php?message=deleted");
         exit;
@@ -204,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$appointmentAt) {
             $errorMessage = 'وقت الموعد غير صالح';
-        } elseif ($appointmentAt < $now) {
+        } elseif ($appointmentAt->getTimestamp() < $now->getTimestamp()) {
             $errorMessage = 'وقت الموعد يجب أن يكون الآن أو لاحقًا';
         } else {
             try {
