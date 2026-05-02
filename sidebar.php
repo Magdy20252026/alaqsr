@@ -27,7 +27,7 @@
         <?php if (canAccess('employees_salaries')) { ?><a href="employees_salaries.php" class="menu-btn salaries-btn <?php echo $currentPage === 'employees_salaries.php' ? 'active-btn' : ''; ?>">💳 قبض رواتب الموظفين</a><?php } ?>
         <?php if (canAccess('salon_cashier')) { ?><a href="salon_cashier.php" class="menu-btn cashier-btn <?php echo $currentPage === 'salon_cashier.php' ? 'active-btn' : ''; ?>">🏦 كاشير الصالون</a><?php } ?>
         <?php if (canAccess('items')) { ?><a href="items.php" class="menu-btn items-btn <?php echo $currentPage === 'items.php' ? 'active-btn' : ''; ?>">📦 الأصناف</a><?php } ?>
-        <?php if (canAccess('sales_cashier')) { ?><a href="#" class="menu-btn sales-btn">🛒 كاشير المبيعات</a><?php } ?>
+        <?php if (canAccess('sales_cashier')) { ?><a href="sales_cashier.php" class="menu-btn sales-btn <?php echo $currentPage === 'sales_cashier.php' ? 'active-btn' : ''; ?>">🛒 كاشير المبيعات</a><?php } ?>
         <?php if (canAccess('expenses')) { ?><a href="#" class="menu-btn expenses-btn">🧾 مصروفات</a><?php } ?>
         <?php if (canAccess('statistics')) { ?><a href="#" class="menu-btn stats-btn">📊 احصائيات</a><?php } ?>
         <?php if (canAccess('daily_closing')) { ?><a href="#" class="menu-btn daily-btn">📘 تقفيل يومي</a><?php } ?>
